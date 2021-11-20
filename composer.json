@@ -1,0 +1,6 @@
+{
+    "require": {
+        "ccxt/ccxt": "^1.61",
+        "textalk/websocket": "^1.5"
+    }
+}

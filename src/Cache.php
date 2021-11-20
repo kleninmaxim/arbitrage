@@ -8,6 +8,10 @@ class Cache
     public static function createFiles()
     {
 
+        if (!file_exists(dirname(__DIR__) . '/cache')) {
+            mkdir(dirname(__DIR__) . '/cache', 0755, true);
+        }
+
         $files = [
             dirname(__DIR__) . '/cache/pairs.json',
             dirname(__DIR__) . '/cache/triangles.json',
@@ -27,6 +31,25 @@ class Cache
             }
 
         }
+
+        /*        $configs = ['main', 'db'];
+
+        foreach ($configs as $config) {
+
+            if (!file_exists(dirname(__DIR__) . '/config/' . $config . '.config.php')) {
+
+                $fp = fopen($config, 'w');
+
+                fwrite(
+                    $fp,
+                    file_get_contents(dirname(__DIR__) . '/config/' . $config . '.config.example.php')
+                );
+
+                fclose($fp);
+
+            }
+
+        }*/
         
     }
 

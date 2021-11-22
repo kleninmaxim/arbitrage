@@ -16,3 +16,5 @@ const COURSES = [
 const PROFIT = 0.5;
 
 const DEPTH = 5;
+
+const TIMEOUT = 100;

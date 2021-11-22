@@ -16,7 +16,8 @@ class Websocket
     {
 
         self::$client = new Client(
-            'wss://stream.binance.com:9443/ws/' . Ccxt::reformatPair($pair) . '@depth' . DEPTH
+            'wss://stream.binance.com:9443/ws/' . Ccxt::reformatPair($pair) . '@depth' . DEPTH,
+            ['timeout' => TIMEOUT]
         );
 
         self::$pair = $pair;

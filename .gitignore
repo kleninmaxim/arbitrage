@@ -1,5 +1,5 @@
+/.idea
 /config/db.config.php
 /config/main.config.php
 /vendor
 /cache
-/.idea

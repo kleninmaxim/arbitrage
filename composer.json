@@ -3,6 +3,7 @@
         "ext-pdo": "*",
         "ext-mbstring": "*",
         "ext-memcached": "*",
+        "ext-bcmath": "*",
         "ccxt/ccxt": "^1.61",
         "textalk/websocket": "^1.5"
     },

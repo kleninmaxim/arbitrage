@@ -8,6 +8,8 @@ class Memcached extends TestCase
 {
     /*
      * This test need Memcached to be started
+     * sudo /etc/init.d/memcached restart
+     * sudo systemctl restart memcached
      */
     public function setUp(): void
     {

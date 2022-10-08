@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Databases;
+namespace Tests\Support;
 
+use Src\Support\Websocket;
 use PHPUnit\Framework\TestCase;
-use Src\Databases\Memcached;
 
-class MemcachedTest extends TestCase
+class WebsocketTest extends TestCase
 {
     /** @test */
     public function test()

@@ -21,7 +21,7 @@ class Math
         return false;
     }
 
-    public function incrementNumber(float $number, float $increment): float
+    public static function incrementNumber(float $number, float $increment): float
     {
         return $increment * floor($number / $increment);
     }

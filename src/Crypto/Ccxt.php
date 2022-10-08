@@ -2,19 +2,26 @@
 
 namespace Src\Crypto;
 
-use Src\Support\Log;
 use ccxt\Exchange;
 use Exception;
 
 class Ccxt
 {
+    private Exchange $exchange;
     public ?array $markets;
     public ?array $format_markets;
-    private Exchange $exchange;
 
-    public function __construct(string $exchange_name, bool $enableRateLimit = false, string $api_key = '', string $api_secret = '', array $ccxt_settings = [])
+    public function __construct(Exchange $exchange)
     {
-        $this->exchange = new ('\\ccxt\\' . $exchange_name(
+        $this->exchange = $exchange;
+    }
+
+    public static function initExchange(string $exchange_name, bool $enableRateLimit = false, string $api_key = '', string $api_secret = '', array $ccxt_settings = []): static
+    {
+        $exchange_class = '\\ccxt\\' . $exchange_name;
+
+        return new static(
+            new $exchange_class(
                 array_merge(
                     ['apiKey' => $api_key, 'secret' => $api_secret, 'enableRateLimit' => $enableRateLimit],
                     $ccxt_settings
@@ -34,17 +41,9 @@ class Ccxt
     /**
      * @throws Exception
      */
-    public function getOpenOrders(): array
+    public function getOpenOrders(string $symbol = null): array
     {
-        if ($this->exchange->has['fetchOpenOrders']) {
-            try {
-                return $this->exchange->fetch_open_orders();
-            } catch (Exception $e) {
-                Log::error($e, $this->exchange->name . ' get error when fetch open orders');
-            }
-        }
-
-        throw new Exception('Has no fetch_open_orders method for ' . $this->exchange->name . ' exchange');
+        return $this->exchange->fetch_open_orders($symbol);
     }
 
     /**
@@ -72,7 +71,7 @@ class Ccxt
     /**
      * @throws Exception
      */
-    public function createOrder(string $symbol, string $type, string $side, float $amount, float $price): array
+    public function createOrder(string $symbol, string $type, string $side, float $amount, float $price = null): array
     {
         return $this->exchange->create_order($symbol, $type, $side, $amount, $price);
     }
@@ -80,7 +79,7 @@ class Ccxt
     /**
      * @throws Exception
      */
-    public function cancelOrder(string $order_id, string $symbol): array
+    public function cancelOrder(string $order_id, string $symbol = null): array
     {
         return $this->exchange->cancel_order($order_id, $symbol);
     }
@@ -88,34 +87,34 @@ class Ccxt
     /**
      * @throws Exception
      */
-    public function cancelAllOrder(): array
+    public function cancelAllOrder(string $symbol = null): array
     {
-        if ($open_orders = $this->getOpenOrders())
+        if ($open_orders = $this->getOpenOrders($symbol))
             foreach ($open_orders as $open_order)
-                $this->exchange->cancel_order($open_order['id'], $open_order['symbol']);
+                $cancel_orders[] = $this->exchange->cancel_order($open_order['id'], $open_order['symbol']);
 
-        return $this->getOpenOrders();
+        return $cancel_orders ?? [];
     }
 
-    public function fetchMarkets(array $assets = [], bool $active = true): void
+    public function fetchMarkets(array $assets = [], bool $off_active = true): ?array
     {
         $markets = $this->exchange->fetch_markets();
 
         if ($assets)
             $markets = array_filter(
                 $markets,
-                fn($market) => in_array($market['base'], $assets) && in_array($market['quote'], $assets) && ($market['base'] . '/' . $market['quote'] == $market['symbol']) && (!$active || $market['active'])
+                fn($market) => in_array($market['base'], $assets) && in_array($market['quote'], $assets) && ($market['base'] . '/' . $market['quote'] == $market['symbol']) && (!$off_active || $market['active'])
             );
 
-        $this->markets = $markets;
+        return $this->markets = $markets;
     }
 
     /**
      * @throws Exception
      */
-    public function setMarkets(array $assets = [], bool $active = true): void
+    public function getMarkets(array $assets = [], bool $active = true): array
     {
-        if (!$this->markets)
+        if (!isset($this->markets))
             $this->fetchMarkets($assets, $active);
 
         foreach ($this->markets as $market) {
@@ -130,12 +129,12 @@ class Ccxt
 
             $format_markets[$symbol] = [
                 'id' => $market['id'],
-                'price_increment' => $market['precision']['price'],
-                'amount_increment' => $market['precision']['amount'],
+                'price_increment' => $this->formatIncrement($market['precision']['price']),
+                'amount_increment' => $this->formatIncrement($market['precision']['amount'])
             ];
         }
 
-        $this->format_markets = $format_markets ?? [];
+        return $this->format_markets = $format_markets ?? [];
     }
 
     /**
@@ -145,15 +144,17 @@ class Ccxt
     {
         $orderbook = $this->getOrderBook($symbol);
 
-        foreach (array_merge($orderbook['bids'], $orderbook['asks']) as $dom)
-            foreach (['0' => 'price', '1' => 'amount'] as $key => $item)
-                $precisions[$item][] = strlen(substr(strrchr($dom[$key], '.'), 1));
+        if (!empty($orderbook['bids']) && !empty($orderbook['asks'])) {
+            foreach (array_merge($orderbook['bids'], $orderbook['asks']) as $dom)
+                foreach (['0' => 'price', '1' => 'amount'] as $key => $item)
+                    $precisions[$item][] = strlen(substr(strrchr($dom[$key], '.'), 1));
 
-        if (!empty($precisions))
-            return [
-                'price' => max($precisions['price']),
-                'amount' => max($precisions['amount'])
-            ];
+            if (!empty($precisions))
+                return [
+                    'price' => max($precisions['price']),
+                    'amount' => max($precisions['amount'])
+                ];
+        }
 
         throw new Exception('probably orderbook bid and ask is empty and not found precisions');
     }
@@ -163,5 +164,10 @@ class Ccxt
         return (is_int($precision))
             ? number_format(10 ** (-1 * $precision), $precision)
             : $precision;
+    }
+
+    public function getExchange(): Exchange
+    {
+        return $this->exchange;
     }
 }

@@ -3,15 +3,16 @@
 namespace Tests\Databases;
 
 use PHPUnit\Framework\TestCase;
+use Src\Databases\Memcached;
 
-class Memcached extends TestCase
+class MemcachedTest extends TestCase
 {
     /** @test */
     public function test()
     {
         $data = ['one', 'two', 'three'];
 
-        $stub = $this->createMock(\Src\Databases\Memcached::class);
+        $stub = $this->createMock(Memcached::class);
 
         $stub->expects($this->once())
             ->method('set')

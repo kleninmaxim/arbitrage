@@ -15,11 +15,11 @@ class CcxtTest extends TestCase
         $this->assertClassHasAttribute('exchange', Ccxt::class);
 
         $this->assertTrue(
-            method_exists(Ccxt::class, 'initExchange'),
-            'Class does not have method initExchange'
+            method_exists(Ccxt::class, 'init'),
+            'Class does not have method init'
         );
 
-        $ccxt = Ccxt::initExchange('binance');
+        $ccxt = Ccxt::init('binance');
 
         $this->assertInstanceOf('ccxt\binance', $ccxt->getExchange());
     }

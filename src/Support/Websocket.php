@@ -15,7 +15,7 @@ class Websocket
         $this->client = $client;
     }
 
-    public static function initWebsocket(string $url, array $option = []): static
+    public static function init(string $url, array $option = []): static
     {
         return new static(new Client($url, array_merge(self::$option, $option)));
     }

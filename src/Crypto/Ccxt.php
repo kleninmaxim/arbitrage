@@ -16,7 +16,7 @@ class Ccxt
         $this->exchange = $exchange;
     }
 
-    public static function initExchange(string $exchange_name, bool $enableRateLimit = false, string $api_key = '', string $api_secret = '', array $ccxt_settings = []): static
+    public static function init(string $exchange_name, bool $enableRateLimit = false, string $api_key = '', string $api_secret = '', array $ccxt_settings = []): static
     {
         $exchange_class = '\\ccxt\\' . $exchange_name;
 

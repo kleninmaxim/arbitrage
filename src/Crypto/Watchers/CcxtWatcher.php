@@ -24,7 +24,7 @@ class CcxtWatcher implements OrderbookWatcher
         $this->depth = $depth;
     }
 
-    public static function init(string $exchange, string $symbol, int $depth = 5, int $usleep = 1000000, ...$parameters): static
+    public static function init(string $exchange, string $symbol, int $depth = 5, int $usleep = 0, ...$parameters): static
     {
         return new static(Ccxt::init($exchange, ...$parameters), $symbol, $depth, $usleep);
     }

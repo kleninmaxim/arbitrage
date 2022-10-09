@@ -37,7 +37,10 @@ class Ccxt
      */
     public function getOrderBook(string $symbol, int $depth = null): array
     {
-        return $this->exchange->fetch_order_book($symbol, $depth);
+        $orderbook = $this->exchange->fetch_order_book($symbol, $depth);
+        $orderbook['exchange'] = $this->name;
+
+        return $orderbook;
     }
 
     /**

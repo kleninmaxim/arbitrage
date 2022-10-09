@@ -167,6 +167,7 @@ class Exmo implements GetStream
                     'timestamp' => $data['ts'],
                     'datetime' => date('Y-m-d H:i:s', floor($data['ts'] / 1000)),
                     'nonce' => null,
+                    'exchange' => $this->name
                 ]
             ];
         }

@@ -10,14 +10,14 @@ namespace Src\Support;
  */
 class Pm2
 {
-    public static function start(string $file, string $name, string $namespace, array $arguments = [], bool $force = false, bool $is_output = false, bool $is_error = false): void
+    public static function start(string $file, string $name, string $namespace, array $arguments = [], bool $force = false, bool $is_output = false, bool $is_error = false): mixed
     {
-        $pm2_command = 'pm2 start ' . START . $file . ' --name "[' . $name . ']"  --namespace "' . $namespace . '"';
+        $pm2_command = 'pm2 start ' . $file . ' --name "[' . $name . ']"  --namespace "' . $namespace . '"';
 
-        if ($is_output)
+        if (!$is_output)
             $pm2_command .= ' -o /dev/null';
 
-        if ($is_error)
+        if (!$is_error)
             $pm2_command .= ' -e /dev/null';
 
         $pm2_command .= ' -m';
@@ -28,7 +28,7 @@ class Pm2
         if ($arguments)
             $pm2_command .= ' -- "' . implode('" "', $arguments) . '"';
 
-        Exec::exec($pm2_command);
+        return Exec::exec($pm2_command);
     }
 
     public static function list(): array

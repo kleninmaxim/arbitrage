@@ -140,6 +140,7 @@ class Binance implements GetStream
                     'timestamp' => null,
                     'datetime' => null,
                     'nonce' => $data['data']['lastUpdateId'],
+                    'exchange' => $this->name
                 ]
             ];
 

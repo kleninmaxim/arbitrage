@@ -20,15 +20,15 @@ class Orderbook
     {
         return new static(MemcachedAdapter::init(), $watcher);
     }
-    
-    public function recordOrderbook(string $exchange, array $orderbooks): void
+
+    public function recordOrderbook(...$parameters): void
     {
-        $this->orderbook_recorder->recordOrderbook($exchange, $orderbooks);
+        $this->orderbook_recorder->recordOrderbook(...$parameters);
     }
 
-    public function getOrderbook(array|string $symbols = [], array|string $exchanges = [], array $list = []): mixed
+    public function getOrderbook(...$parameters): mixed
     {
-        return $this->orderbook_recorder->getOrderbook($symbols, $exchanges, $list);
+        return $this->orderbook_recorder->getOrderbook(...$parameters);
     }
 
     /**

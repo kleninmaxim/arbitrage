@@ -3,9 +3,13 @@
 namespace Src\Crypto\Exchanges\Original;
 
 use Exception;
+use Src\Crypto\Exchanges\GetStream;
+use Src\Crypto\Exchanges\HasStreams;
 
-class Binance
+class Binance implements GetStream
 {
+    use HasStreams;
+
     private string $name = 'binance';
     private string $websocket_base_endpoint = 'wss://stream.binance.com:9443';
     private array $streams = ['raw' => '/ws', 'combined' => '/stream'];
@@ -36,6 +40,20 @@ class Binance
         return $this->name;
     }
 
+    public function getPartialBookDepthStream(array|string $symbols = '', int $depth = 5, bool $fast = true, array $custom = []): array
+    {
+        if ($custom) {
+            $options = $custom;
+        } elseif (is_string($symbols)) {
+            $options = [['symbol' => $symbols, 'level' => $depth, 'fast' => $fast]];
+        } elseif (is_array($symbols)) {
+            foreach ($symbols as $symbol)
+                $options[] = ['symbol' => $symbol, 'level' => $depth, 'fast' => $fast];
+        }
+
+        return $options ?? [];
+    }
+
     /**
      * @throws Exception
      */
@@ -64,41 +82,10 @@ class Binance
     /**
      * @throws Exception
      */
-    public function getStreams(array $all_streams): array
-    {
-        foreach ($all_streams as $stream_name => $options) {
-            foreach ($options as $option) {
-                $streams[] = $this->getStream($stream_name, $option);
-            }
-        }
-
-        return $streams ?? [];
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function getStreamsWithOptions(array $all_streams): array
-    {
-        foreach ($all_streams as $stream_name => $options) {
-            foreach ($options as $option) {
-                $streams[$this->getStream($stream_name, $option)] = [
-                    'stream_name' => $stream_name,
-                    'options' => $option,
-                ];
-            }
-        }
-
-        return $streams ?? [];
-    }
-
-    /**
-     * @throws Exception
-     */
     public function processWebsocketData(mixed $data, array $streams): array
     {
-        if ($orderbook = $this->isStreamWebsocketData($data, $streams))
-            return $orderbook;
+        if ($format_websocket_data = $this->isWebsocketData($data, $streams))
+            return $format_websocket_data;
 
         if ($result = $this->isResultWebsocketData($data))
             return $result;
@@ -118,7 +105,7 @@ class Binance
                     'data' => null
                 ];
 
-            throw new Exception('The request sent was a unsuccessful');
+            throw new Exception('The request sent was unsuccessful');
         }
 
         return [];
@@ -127,7 +114,7 @@ class Binance
     /**
      * @throws Exception
      */
-    private function isStreamWebsocketData(mixed $data, array $streams): array
+    private function isWebsocketData(mixed $data, array $streams): array
     {
         if (!empty($data['stream']) && !empty($data['data']))
             return match ($streams[$data['stream']]['stream_name']) {

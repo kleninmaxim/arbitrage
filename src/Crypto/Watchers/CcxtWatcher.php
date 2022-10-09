@@ -34,13 +34,17 @@ class CcxtWatcher implements OrderbookWatcher
      */
     public function watchOrderbook(Orderbook $orderbook, string $method): void
     {
-        if ($method == self::REST)
-            while (true) {
-                usleep($this->usleep);
-
-                $orderbook->recordOrderbook($this->ccxt->name, $this->ccxt->getOrderBook($this->symbol, $this->depth));
-            }
+        $this->$method($orderbook);
 
         throw new Exception('Does not have such method: ' . $method);
+    }
+
+    public function rest(Orderbook $orderbook)
+    {
+        while (true) {
+            usleep($this->usleep);
+
+            $orderbook->recordOrderbook($this->ccxt->name, $this->ccxt->getOrderBook($this->symbol, $this->depth));
+        }
     }
 }

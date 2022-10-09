@@ -19,20 +19,11 @@ class BinanceWatcher implements OrderbookWatcher
     /**
      * @throws Exception
      */
-    public function __construct(Binance $binance, array|string $symbols = '', int $depth = 5, bool $fast = true, array $custom = [])
+    public function __construct(Binance $binance, ...$parameters)
     {
         $this->binance = $binance;
 
-        if ($custom) {
-            $options = $custom;
-        } elseif (is_string($symbols)) {
-            $options = [['symbol' => $symbols, 'level' => $depth, 'fast' => $fast]];
-        } elseif (is_array($symbols)) {
-            foreach ($symbols as $symbol)
-                $options[] = ['symbol' => $symbol, 'level' => $depth, 'fast' => $fast];
-        }
-
-        $this->all_streams = ['partial_book_depth_stream' => $options ?? []];
+        $this->all_streams['partial_book_depth_stream'] = $this->binance->getPartialBookDepthStream(...$parameters);
     }
 
     /**
@@ -48,31 +39,39 @@ class BinanceWatcher implements OrderbookWatcher
      */
     public function watchOrderbook(Orderbook $orderbook, string $method): void
     {
-        if ($method == self::WEBSOCKET) {
-            $streams = $this->binance->getStreamsWithOptions($this->all_streams);
-
-            $websocket = Websocket::init($this->binance->getWebsocketEndpoint());
-            $websocket->send($this->binance->getRequest($this->all_streams));
-
-            while (true) {
-                $data = $websocket->receive();
-
-                try {
-                    $process_data = $this->binance->processWebsocketData($data, $streams);
-
-                    if ($process_data['response'] == 'orderbook')
-                        $orderbook->recordOrderbook(
-                            $this->binance->getName(),
-                            $process_data['data']
-                        );
-                } catch (Exception $e) {
-                    Log::error($e, $data);
-
-                    throw $e;
-                }
-            }
-        }
+        $this->$method($orderbook);
 
         throw new Exception('Does not have such method: ' . $method);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function websocket(Orderbook $orderbook)
+    {
+        $streams = $this->binance->getStreamsWithOptions($this->all_streams);
+
+        $websocket = Websocket::init($this->binance->getWebsocketEndpoint());
+        $websocket->send($this->binance->getRequest($this->all_streams));
+
+        while (true) {
+            $data = $websocket->receive();
+
+            try {
+                $process_data = $this->binance->processWebsocketData($data, $streams);
+
+                if ($process_data['response'] == 'orderbook') {
+                    $orderbook->recordOrderbook(
+                        $this->binance->getName(),
+                        $process_data['data']
+                    );
+                } elseif ($process_data['response'] == 'result')
+                    echo '[' . date('Y-m-d H:i:s') . '] The request sent was a successful' . PHP_EOL;
+            } catch (Exception $e) {
+                Log::error($e, $data);
+
+                throw $e;
+            }
+        }
     }
 }

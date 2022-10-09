@@ -35,22 +35,19 @@ class MemcachedAdapter implements OrderbookAdapter
     {
         if ($list)
             return $this->memcached->get($list);
-
-        if (is_string($exchanges) && is_string($symbols))
-            $keys = $exchanges . '_' . $symbols;
-
-        if (is_string($exchanges) && is_array($symbols))
-            foreach ($symbols as $symbol)
-                $keys[] = $exchanges . '_' . $symbol;
-
-        if (is_array($exchanges) && is_string($symbols))
-            foreach ($exchanges as $exchange)
-                $keys[] = $exchange . '_' . $symbols;
-
-        if (is_array($exchanges) && is_array($symbols))
+        if (is_array($exchanges) && is_array($symbols)) {
             foreach ($exchanges as $exchange)
                 foreach ($symbols as $symbol)
                     $keys[] = $exchange . '_' . $symbol;
+        } elseif (is_array($exchanges) && is_string($symbols)) {
+            foreach ($exchanges as $exchange)
+                $keys[] = $exchange . '_' . $symbols;
+        } elseif (is_string($exchanges) && is_array($symbols)) {
+            foreach ($symbols as $symbol)
+                $keys[] = $exchanges . '_' . $symbol;
+        }elseif (is_string($exchanges) && is_string($symbols)) {
+            $keys = $exchanges . '_' . $symbols;
+        }
 
         return $this->memcached->get($keys ?? []);
     }

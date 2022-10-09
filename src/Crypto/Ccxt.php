@@ -8,12 +8,14 @@ use Exception;
 class Ccxt
 {
     private Exchange $exchange;
+    public string $name;
     public ?array $markets;
     public ?array $format_markets;
 
     public function __construct(Exchange $exchange)
     {
         $this->exchange = $exchange;
+        $this->name = $exchange->id;
     }
 
     public static function init(string $exchange_name, bool $enableRateLimit = false, string $api_key = '', string $api_secret = '', array $ccxt_settings = []): static

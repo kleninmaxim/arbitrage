@@ -15,9 +15,10 @@ $key = $argv[1];
 $config = Config::config('services_orderbooks', 'watchers', 'exmo', $key);
 
 $markets = $config['markets'];
+$service_name = $config['name'];
 
 try {
-    $orderbook = Orderbook::init(ExmoWatcher::init($markets));
+    $orderbook = Orderbook::init(ExmoWatcher::init($service_name, $markets));
     $orderbook->watchOrderbook(ExmoWatcher::WEBSOCKET);
 } catch (Exception $e) {
     Log::error($e, $config);

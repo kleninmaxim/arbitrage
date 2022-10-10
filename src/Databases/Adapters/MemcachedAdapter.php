@@ -19,15 +19,27 @@ class MemcachedAdapter implements OrderbookAdapter
         return new static(Memcached::init(...$parameters));
     }
 
-    public function recordOrderbook(string $exchange, array $orderbooks): void
+    public function recordOrderbook(string $service, string $exchange, array $orderbooks): void
     {
-        $keys = isset($orderbooks['symbol'])
-            ? $exchange . '_' . $orderbooks['symbol']
-            : array_map(fn($orderbook) => $exchange . '_' . $orderbook['symbol'], $orderbooks);
+        if (isset($orderbooks['symbol'])) {
+            $keys = $exchange . '_' . $orderbooks['symbol'];
+            $data = [
+                'service' => $service,
+                'orderbook' => $orderbooks
+            ];
+        } else {
+            foreach ($orderbooks as $orderbook) {
+                $keys[] = $exchange . '_' . $orderbook['symbol'];
+                $data[] = [
+                    'service' => $service,
+                    'orderbook' => $orderbook
+                ];
+            }
+        }
 
         $this->memcached->set(
-            $keys,
-            $orderbooks
+            $keys ?? [],
+            $data ?? []
         );
     }
 

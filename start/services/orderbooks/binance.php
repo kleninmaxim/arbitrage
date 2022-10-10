@@ -15,9 +15,10 @@ $key = $argv[1];
 $config = Config::config('services_orderbooks', 'watchers', 'binance', $key);
 
 $markets = $config['markets'];
+$service_name = $config['name'];
 
 try {
-    $orderbook = Orderbook::init(BinanceWatcher::init($markets));
+    $orderbook = Orderbook::init(BinanceWatcher::init($service_name, $markets));
     $orderbook->watchOrderbook(BinanceWatcher::WEBSOCKET);
 } catch (Exception $e) {
     Log::error($e, $config);

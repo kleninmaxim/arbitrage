@@ -16,8 +16,9 @@ $config = Config::config('services_orderbooks', 'watchers', 'ccxt', $key);
 
 $exchange = $config['exchange'];
 $symbol = $config['symbol'];
+$service_name = $config['name'];
 
-$orderbook = Orderbook::init(CcxtWatcher::init($exchange, $symbol));
+$orderbook = Orderbook::init(CcxtWatcher::init($exchange, $service_name, $symbol));
 
 try {
     $orderbook->watchOrderbook(CcxtWatcher::REST);

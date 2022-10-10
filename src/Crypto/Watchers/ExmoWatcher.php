@@ -13,15 +13,17 @@ class ExmoWatcher implements OrderbookWatcher
 {
     private Exmo $exmo;
     private array $all_streams;
+    private string $service_name;
 
     const WEBSOCKET = 'websocket';
 
     /**
      * @throws Exception
      */
-    public function __construct(Exmo $exmo, ...$parameters)
+    public function __construct(Exmo $exmo, string $service_name, ...$parameters)
     {
         $this->exmo = $exmo;
+        $this->service_name = $service_name;
 
         $this->all_streams = ['order_book_snapshots' => $this->exmo->OrderBookSnapshots(...$parameters)];
     }
@@ -29,9 +31,9 @@ class ExmoWatcher implements OrderbookWatcher
     /**
      * @throws Exception
      */
-    public static function init(...$parameters): static
+    public static function init(string $service_name, ...$parameters): static
     {
-        return new static(new Exmo(), ...$parameters);
+        return new static(new Exmo(), $service_name, ...$parameters);
     }
 
     /**
@@ -62,6 +64,7 @@ class ExmoWatcher implements OrderbookWatcher
 
                 if ($process_data['response'] == 'orderbook') {
                     $orderbook->recordOrderbook(
+                        $this->service_name,
                         $this->exmo->getName(),
                         $process_data['data']
                     );
@@ -71,8 +74,13 @@ class ExmoWatcher implements OrderbookWatcher
                     echo '[' . date('Y-m-d H:i:s') . '] Topic: ' . $process_data['data']['topic'] . ' is ' . $process_data['data']['event'] . PHP_EOL;
                 }
             } catch (Exception $e) {
-                Log::error($e, $data);
+                $orderbook->recordOrderbook(
+                    $this->service_name,
+                    $this->exmo->getName(),
+                    []
+                );
 
+                Log::error($e, $data);
                 throw $e;
             }
         }

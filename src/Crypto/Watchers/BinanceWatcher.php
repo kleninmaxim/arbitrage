@@ -13,15 +13,17 @@ class BinanceWatcher implements OrderbookWatcher
 {
     private Binance $binance;
     private array $all_streams;
+    private string $service_name;
 
     const WEBSOCKET = 'websocket';
 
     /**
      * @throws Exception
      */
-    public function __construct(Binance $binance, ...$parameters)
+    public function __construct(Binance $binance, string $service_name, ...$parameters)
     {
         $this->binance = $binance;
+        $this->service_name = $service_name;
 
         $this->all_streams['partial_book_depth_stream'] = $this->binance->getPartialBookDepthStream(...$parameters);
     }
@@ -29,9 +31,9 @@ class BinanceWatcher implements OrderbookWatcher
     /**
      * @throws Exception
      */
-    public static function init(...$parameters): static
+    public static function init(string $service_name, ...$parameters): static
     {
-        return new static(new Binance(), ...$parameters);
+        return new static(new Binance(),$service_name,  ...$parameters);
     }
 
     /**
@@ -62,14 +64,20 @@ class BinanceWatcher implements OrderbookWatcher
 
                 if ($process_data['response'] == 'orderbook') {
                     $orderbook->recordOrderbook(
+                        $this->service_name,
                         $this->binance->getName(),
                         $process_data['data']
                     );
                 } elseif ($process_data['response'] == 'result')
                     echo '[' . date('Y-m-d H:i:s') . '] The request sent was a successful' . PHP_EOL;
             } catch (Exception $e) {
-                Log::error($e, $data);
+                $orderbook->recordOrderbook(
+                    $this->service_name,
+                    $this->binance->getName(),
+                    []
+                );
 
+                Log::error($e, $data);
                 throw $e;
             }
         }

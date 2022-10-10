@@ -45,6 +45,11 @@ class Log
             self::log('debug', $text);
     }
 
+    public static function warning(array|string $text): void
+    {
+        self::log('warning', $text);
+    }
+
     public static function error(Exception $e, mixed $record = null): void
     {
         $time = date('Y-m-d H:i:s');

@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "ccxt/ccxt",
-            "version": "1.95.22",
+            "version": "1.95.37",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ccxt/ccxt.git",
-                "reference": "a4e6e0c816d45d67513b8c8d660a201fcee0f8ff"
+                "reference": "d08a9a5b934a37576c4af152cdc66e09cd0d1087"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ccxt/ccxt/zipball/a4e6e0c816d45d67513b8c8d660a201fcee0f8ff",
-                "reference": "a4e6e0c816d45d67513b8c8d660a201fcee0f8ff",
+                "url": "https://api.github.com/repos/ccxt/ccxt/zipball/d08a9a5b934a37576c4af152cdc66e09cd0d1087",
+                "reference": "d08a9a5b934a37576c4af152cdc66e09cd0d1087",
                 "shasum": ""
             },
             "require": {
@@ -286,7 +286,7 @@
             ],
             "support": {
                 "issues": "https://github.com/ccxt/ccxt/issues",
-                "source": "https://github.com/ccxt/ccxt/tree/1.95.22"
+                "source": "https://github.com/ccxt/ccxt/tree/1.95.37"
             },
             "funding": [
                 {
@@ -294,7 +294,7 @@
                     "type": "open_collective"
                 }
             ],
-            "time": "2022-10-07T18:14:32+00:00"
+            "time": "2022-10-11T16:30:29+00:00"
         },
         {
             "name": "evenement/evenement",

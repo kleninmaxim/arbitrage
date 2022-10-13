@@ -12,7 +12,7 @@ if (!isset($argv[1]))
 
 $key = $argv[1];
 
-$config = Config::config('services_orderbooks', 'watchers', 'exmo', $key);
+$config = Config::config('services_orderbooks', 'watchers', 'dev', 'exmo', $key);
 
 $markets = $config['markets'];
 $service_name = $config['name'];

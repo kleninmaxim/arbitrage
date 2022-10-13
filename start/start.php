@@ -16,7 +16,7 @@ while (true) {
 
     if (
         $data = Filter::memcachedDataByTimestamp(
-            $orderbook->getOrderbook(['BTC/USDT', 'ETH/USDT'], ['binance', 'exmo', 'kuna']),
+            $orderbook->getOrderbook(['BTC/USDT', 'ETH/USDT'], ['binance', 'exmo']),
             $lifetime
         )
     ) {

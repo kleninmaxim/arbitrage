@@ -25,5 +25,5 @@ while (true) {
             echo '[' . date('Y-m-d H:i:s') . '] ' . $or['exchange'] . ': ' . $or['symbol'] . ', ' . $or['bids'][0][0] . ', ' . $or['asks'][0][0] . PHP_EOL;
         }
     } elseif (Time::up(1, 'empty_data'))
-        Log::warning('Data Getting From Memcached Not Filtered By Timestamp');
+        Log::warning('Data Getting From Memcached Not Filtered By Timestamp. ' . __FILE__);
 }

@@ -21,7 +21,7 @@ class Log
         $date = date('Y-m-d H:i:s');
 
         if (is_array($text)) {
-            $data = implode("\n", $text);
+            $data = print_r($text, true);
 
             $content = <<<EOT
                 ------------------------------------------------------------------------------------------------------------------------

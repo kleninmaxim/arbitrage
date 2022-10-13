@@ -33,7 +33,7 @@ class Log
             $content = '[' . $date . '] ' . $text . "\n";
 
         file_put_contents(
-            self::$path . $file_name . '.log',
+            self::$path . str_replace('/', '-', $file_name) . '.log',
             $content,
             FILE_APPEND
         );

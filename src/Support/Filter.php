@@ -14,7 +14,7 @@ class Filter
                     $accesses[] = $datum['data']['service'];
             } elseif (Time::up(5, $key, true)) {
                 Log::log(
-                    str_replace('/', '_', $key),
+                    __CLASS__,
                     ['$key' => $key, 'service' => $datum['data']['service'], 'log_message' => 'Service has expired and not access Filter: ' . __CLASS__ . __METHOD__]
                 );
             }

@@ -21,8 +21,11 @@ class Math
         return false;
     }
 
-    public static function incrementNumber(float $number, float $increment): float
+    public static function incrementNumber(float $number, float $increment, bool $round_up = false): float
     {
+        if ($round_up)
+            $number += $increment;
+
         return $increment * floor($number / $increment);
     }
 }

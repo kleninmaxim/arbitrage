@@ -4,5 +4,5 @@ namespace Src\Services\Orderbook;
 
 interface OrderbookWatcher
 {
-    public function watchOrderbook(Orderbook $orderbook, string $method): void;
+    public function watchOrderbook(OrderbookWorker $orderbook, string $method): void;
 }

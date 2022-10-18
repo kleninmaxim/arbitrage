@@ -54,6 +54,14 @@ class Ccxt
     /**
      * @throws Exception
      */
+    public function getOrderStatus(string $order_id, string $symbol = null)
+    {
+        return $this->exchange->fetch_order_status($order_id, $symbol);
+    }
+
+    /**
+     * @throws Exception
+     */
     public function getBalances(array $assets = null): array
     {
         $balances = $this->exchange->fetch_balance();

@@ -4,7 +4,7 @@ namespace Src\Crypto\Watchers;
 
 use Exception;
 use Src\Crypto\Exchanges\Original\Binance;
-use Src\Services\Orderbook\Orderbook;
+use Src\Services\Orderbook\OrderbookWorker;
 use Src\Services\Orderbook\OrderbookWatcher;
 use Src\Support\Log;
 use Src\Support\Websocket;
@@ -39,7 +39,7 @@ class BinanceWatcher implements OrderbookWatcher
     /**
      * @throws Exception
      */
-    public function watchOrderbook(Orderbook $orderbook, string $method): void
+    public function watchOrderbook(OrderbookWorker $orderbook, string $method): void
     {
         $this->$method($orderbook);
 
@@ -49,7 +49,7 @@ class BinanceWatcher implements OrderbookWatcher
     /**
      * @throws Exception
      */
-    public function websocket(Orderbook $orderbook)
+    public function websocket(OrderbookWorker $orderbook)
     {
         $streams = $this->binance->getStreamsWithOptions($this->all_streams);
 

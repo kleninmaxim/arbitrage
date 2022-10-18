@@ -1,7 +1,7 @@
 <?php
 
 use Src\Crypto\Watchers\CcxtWatcher;
-use Src\Services\Orderbook\Orderbook;
+use Src\Services\Orderbook\OrderbookWorker;
 use Src\Support\Config;
 use Src\Support\Log;
 
@@ -18,10 +18,11 @@ $exchange = $config['exchange'];
 $symbol = $config['symbol'];
 $service_name = $config['name'];
 
-$orderbook = Orderbook::init(CcxtWatcher::init($exchange, $service_name, $symbol));
+$orderbook = OrderbookWorker::init(CcxtWatcher::init($exchange, $service_name, $symbol));
 
 try {
     $orderbook->watchOrderbook(CcxtWatcher::REST);
 } catch (Exception $e) {
     Log::error($e, $config);
+    sleep(1);
 }

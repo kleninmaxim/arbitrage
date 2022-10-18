@@ -1,13 +1,13 @@
 <?php
 
-use Src\Services\Orderbook\Orderbook;
+use Src\Services\Orderbook\OrderbookWorker;
 use Src\Support\Filter;
 use Src\Support\Log;
 use Src\Support\Time;
 
 require_once dirname(__DIR__) . '/index.php';
 
-$orderbook = Orderbook::init();
+$orderbook = OrderbookWorker::init();
 
 $lifetime = 2;
 

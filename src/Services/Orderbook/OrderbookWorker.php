@@ -5,7 +5,7 @@ namespace Src\Services\Orderbook;
 use Exception;
 use Src\Databases\Adapters\MemcachedAdapter;
 
-class Orderbook
+class OrderbookWorker
 {
     private OrderbookWatcher|null $watcher;
     private OrderbookAdapter $orderbook_recorder;

@@ -4,7 +4,7 @@ namespace Src\Crypto\Watchers;
 
 use Exception;
 use Src\Crypto\Ccxt;
-use Src\Services\Orderbook\Orderbook;
+use Src\Services\Orderbook\OrderbookWorker;
 use Src\Services\Orderbook\OrderbookWatcher;
 use Src\Support\Log;
 
@@ -35,7 +35,7 @@ class CcxtWatcher implements OrderbookWatcher
     /**
      * @throws Exception
      */
-    public function watchOrderbook(Orderbook $orderbook, string $method): void
+    public function watchOrderbook(OrderbookWorker $orderbook, string $method): void
     {
         $this->$method($orderbook);
 
@@ -45,7 +45,7 @@ class CcxtWatcher implements OrderbookWatcher
     /**
      * @throws Exception
      */
-    public function rest(Orderbook $orderbook)
+    public function rest(OrderbookWorker $orderbook)
     {
         while (true) {
             usleep($this->usleep);

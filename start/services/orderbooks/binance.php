@@ -1,7 +1,7 @@
 <?php
 
 use Src\Crypto\Watchers\BinanceWatcher;
-use Src\Services\Orderbook\Orderbook;
+use Src\Services\Orderbook\OrderbookWorker;
 use Src\Support\Config;
 use Src\Support\Log;
 
@@ -18,8 +18,9 @@ $markets = $config['markets'];
 $service_name = $config['name'];
 
 try {
-    $orderbook = Orderbook::init(BinanceWatcher::init($service_name, $markets));
+    $orderbook = OrderbookWorker::init(BinanceWatcher::init($service_name, $markets));
     $orderbook->watchOrderbook(BinanceWatcher::WEBSOCKET);
 } catch (Exception $e) {
     Log::error($e, $config);
+    sleep(1);
 }

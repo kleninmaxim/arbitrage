@@ -54,7 +54,7 @@ class Ccxt
     /**
      * @throws Exception
      */
-    public function getOrderStatus(string $order_id, string $symbol = null)
+    public function getOrderStatus(string $order_id, string $symbol = null): array
     {
         return $this->exchange->fetch_order_status($order_id, $symbol);
     }

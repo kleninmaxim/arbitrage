@@ -4,7 +4,7 @@ namespace Src\Support;
 
 class Filter
 {
-    public static function memcachedDataByTimestamp(array $data, float $lifetime): array
+    public static function memcachedDataOrderbookByTimestamp(array $data, float $lifetime): array
     {
         $accesses = [];
 

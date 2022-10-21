@@ -1,8 +1,8 @@
 <?php
 
-use Src\Imitations\Arbitrage;
-use Src\Imitations\Ccxt;
-use Src\Imitations\OrderbookWorker;
+use Src\Algo\Arbitrage;
+use Src\Crypto\Ccxt;
+use Src\Services\Orderbook\OrderbookWorker;
 use Src\Support\Config;
 use Src\Support\Filter;
 use Src\Support\Log;

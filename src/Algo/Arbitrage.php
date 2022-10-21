@@ -18,6 +18,7 @@ class Arbitrage
     private array $mirror_orders = [];
     private bool $need_update_balance_exchange = true;
     private bool $need_update_balance_market_discovery = true;
+    private array $positions;
 
     /**
      * @throws Exception
@@ -116,7 +117,7 @@ class Arbitrage
         return $prices ?? [];
     }
 
-    public function getPositions(array $prices, string $exchange, string $market_discovery, string $quote_asset, $markets): array
+    public function updatePositions(array $prices, string $exchange, string $market_discovery, string $quote_asset, $markets): void
     {
         $sum = [
             $exchange => 0,
@@ -181,7 +182,7 @@ class Arbitrage
             ];
         }
 
-        return $positions ?? [];
+        $this->positions = $positions ?? [];
     }
 
     /**
@@ -370,10 +371,10 @@ class Arbitrage
     /**
      * @throws Exception
      */
-    public function createLimitOrders(array $orderbooks, array $positions, array $use_markets, float $min_deal_amount, array $profits, array $fees, array $markets): void
+    public function createLimitOrders(array $orderbooks, array $use_markets, float $min_deal_amount, array $profits, array $fees, array $markets): void
     {
         foreach ($use_markets as $symbol)
-            $this->createLimitOrder($orderbooks, $positions[$symbol], $symbol, $min_deal_amount, $profits, $fees, $markets);
+            $this->createLimitOrder($orderbooks, $this->positions[$symbol], $symbol, $min_deal_amount, $profits, $fees, $markets);
     }
 
     public function getOpenOrder(string $market, string $side): array|null

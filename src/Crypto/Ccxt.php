@@ -4,6 +4,7 @@ namespace Src\Crypto;
 
 use ccxt\Exchange;
 use Exception;
+use Src\Support\Log;
 
 class Ccxt
 {
@@ -32,79 +33,101 @@ class Ccxt
         );
     }
 
-    /**
-     * @throws Exception
-     */
-    public function getOrderBook(string $symbol, int $depth = null): array
+    public function getOrderBook(string $symbol, int $depth = null): array|null
     {
-        $orderbook = $this->exchange->fetch_order_book($symbol, $depth);
-        $orderbook['exchange'] = $this->name;
+        try {
+            $orderbook = $this->exchange->fetch_order_book($symbol, $depth);
+            $orderbook['exchange'] = $this->name;
 
-        return $orderbook;
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function getOpenOrders(string $symbol = null): array
-    {
-        return $this->exchange->fetch_open_orders($symbol);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function getOrderStatus(string $order_id, string $symbol = null): array
-    {
-        return $this->exchange->fetch_order_status($order_id, $symbol);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function getBalances(array $assets = null): array
-    {
-        $balances = $this->exchange->fetch_balance();
-
-        if ($assets) {
-            foreach ($assets as $asset) {
-                if (!empty($balances[$asset])) {
-                    $modify_balances[$asset] = $balances[$asset];
-                } else {
-                    $modify_balances[$asset] = ['free' => 0, 'used' => 0, 'total' => 0];
-                }
-            }
-
-            return $modify_balances ?? [];
+            return $orderbook;
+        } catch (Exception $e) {
+            Log::error($e, ['$symbol' => $symbol, '$depth' => $depth]);
         }
 
-        return $balances;
+        return null;
     }
 
-    /**
-     * @throws Exception
-     */
-    public function createOrder(string $symbol, string $type, string $side, float $amount, float $price = null): array
+    public function getOpenOrders(string $symbol = null): array|null
     {
-        return $this->exchange->create_order($symbol, $type, $side, $amount, $price);
+        try {
+            return $this->exchange->fetch_open_orders($symbol);
+        } catch (Exception $e) {
+            Log::error($e, ['$symbol' => $symbol]);
+        }
+
+        return null;
     }
 
-    /**
-     * @throws Exception
-     */
-    public function cancelOrder(string $order_id, string $symbol = null): array
+    public function getOrderStatus(string $order_id, string $symbol = null): array|null
     {
-        return $this->exchange->cancel_order($order_id, $symbol);
+        try {
+            return $this->exchange->fetch_order_status($order_id, $symbol);
+        } catch (Exception $e) {
+            Log::error($e, ['$order_id' => $order_id, '$symbol' => $symbol]);
+        }
+
+        return null;
     }
 
-    /**
-     * @throws Exception
-     */
+    public function getBalances(array $assets = null): array|null
+    {
+        try {
+            $balances = $this->exchange->fetch_balance();
+
+            if ($assets) {
+                foreach ($assets as $asset) {
+                    if (!empty($balances[$asset])) {
+                        $modify_balances[$asset] = $balances[$asset];
+                    } else {
+                        $modify_balances[$asset] = ['free' => 0, 'used' => 0, 'total' => 0];
+                    }
+                }
+
+                return $modify_balances ?? [];
+            }
+
+            unset($balances['info']);
+            unset($balances['timestamp']);
+            unset($balances['datetime']);
+            unset($balances['free']);
+            unset($balances['used']);
+            unset($balances['total']);
+
+            return $balances;
+        } catch (Exception $e) {
+            Log::error($e, ['$assets' => $assets]);
+        }
+
+        return null;
+    }
+
+    public function createOrder(string $symbol, string $type, string $side, float $amount, float $price = null): array|null
+    {
+        try {
+            return $this->exchange->create_order($symbol, $type, $side, $amount, $price);
+        } catch (Exception $e) {
+            Log::error($e, ['$symbol' => $symbol, '$type' => $type, '$side' => $side, '$amount' => $amount, '$price' => $price]);
+        }
+
+        return null;
+    }
+
+    public function cancelOrder(string $order_id, string $symbol = null): array|null
+    {
+        try {
+            return $this->exchange->cancel_order($order_id, $symbol);
+        } catch (Exception $e) {
+            Log::error($e, ['$order_id' => $order_id, '$symbol' => $symbol]);
+        }
+
+        return null;
+    }
+
     public function cancelAllOrder(string $symbol = null): array
     {
         if ($open_orders = $this->getOpenOrders($symbol))
             foreach ($open_orders as $open_order)
-                $cancel_orders[] = $this->exchange->cancel_order($open_order['id'], $open_order['symbol']);
+                $cancel_orders[] = $this->cancelOrder($open_order['id'], $open_order['symbol']);
 
         return $cancel_orders ?? [];
     }

@@ -150,7 +150,7 @@ class Ccxt
      */
     public function getMarkets(array $assets = [], bool $active = true): array
     {
-        if (!isset($this->markets))
+        if (empty($this->markets))
             $this->fetchMarkets($assets, $active);
 
         foreach ($this->markets as $market) {

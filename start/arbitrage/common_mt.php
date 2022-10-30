@@ -27,8 +27,8 @@ $assets = $config['assets'];
 $use_markets = $config['use_markets'];
 $info_of_markets = $config['info_of_markets'];
 
-$amount_precision = $info_of_markets[$symbol]['amount_precision'];
-$price_precision = $info_of_markets[$symbol]['price_precision'];
+$price_increment = $info_of_markets[$symbol]['price_increment'];
+$amount_increment = $info_of_markets[$symbol]['amount_increment'];
 $keys = getMemcachedKeys([$exchange, $market_discovery], $use_markets);
 
 $memcached = \Src\Databases\Memcached::init();
@@ -54,18 +54,18 @@ while (true) {
                          $imitation_market_order = imitationMarketOrderSell(
                              $orderbooks[$market_discovery][$symbol],
                              $limit_exchange_sell_order['market_discovery']['quote']['dirty'],
-                             $amount_precision,
-                             $price_precision
+                             $amount_increment,
+                             $price_increment
                          )
                      ) {
                          if (isOrderInRange($limit_exchange_sell_order, $imitation_market_order)) {
-                             createMirrorOrder($ccxt_exchange, $ccxt_market_discovery, $limit_exchange_sell_order, $symbol, $min_deal_amount, $amount_precision, false);
+                             createMirrorOrder($ccxt_exchange, $ccxt_market_discovery, $limit_exchange_sell_order, $symbol, $min_deal_amount, $amount_increment, false);
                          } else
-                             createMirrorOrder($ccxt_exchange, $ccxt_market_discovery, $limit_exchange_sell_order, $symbol, $min_deal_amount, $amount_precision, true);
+                             createMirrorOrder($ccxt_exchange, $ccxt_market_discovery, $limit_exchange_sell_order, $symbol, $min_deal_amount, $amount_increment, true);
                      } else
-                         createMirrorOrder($ccxt_exchange, $ccxt_market_discovery, $limit_exchange_sell_order, $symbol, $min_deal_amount, $amount_precision, true);
+                         createMirrorOrder($ccxt_exchange, $ccxt_market_discovery, $limit_exchange_sell_order, $symbol, $min_deal_amount, $amount_increment, true);
                  } else
-                     createMirrorOrder($ccxt_exchange, $ccxt_market_discovery, $limit_exchange_sell_order, $symbol, $min_deal_amount, $amount_precision, true);
+                     createMirrorOrder($ccxt_exchange, $ccxt_market_discovery, $limit_exchange_sell_order, $symbol, $min_deal_amount, $amount_increment, true);
              } else {
                  if (proofOrderbooks($orderbooks, $use_markets)) {
                      $balances[$market_discovery] = $api_keys_market_discovery->getBalances($assets);
@@ -81,8 +81,8 @@ while (true) {
                              $profits,
                              $fees[$exchange]['maker'],
                              $fees[$market_discovery]['taker'],
-                             $amount_precision,
-                             $price_precision
+                             $amount_increment,
+                             $price_increment
                          );
 
                          if ($counting_sell && $counting_sell['market_discovery']['confidence_interval']['price_max'] < $positions[$symbol]['sell']['price']) {
@@ -96,8 +96,8 @@ while (true) {
                                          $profits,
                                          $fees[$exchange]['taker'],
                                          $fees[$market_discovery]['taker'],
-                                         $amount_precision,
-                                         $price_precision
+                                         $amount_increment,
+                                         $price_increment
                                      );
                                  }
 
@@ -134,17 +134,17 @@ while (true) {
                          $imitation_market_order = imitationMarketOrderBuy(
                              $orderbooks[$market_discovery][$symbol],
                              $limit_exchange_buy_order['market_discovery']['amount'],
-                             $price_precision
+                             $price_increment
                          )
                      ) {
                          if (isOrderInRange($limit_exchange_buy_order, $imitation_market_order)) {
-                             createMirrorOrder($ccxt_exchange, $ccxt_market_discovery, $limit_exchange_buy_order, $symbol, $min_deal_amount, $amount_precision, false);
+                             createMirrorOrder($ccxt_exchange, $ccxt_market_discovery, $limit_exchange_buy_order, $symbol, $min_deal_amount, $amount_increment, false);
                          } else
-                             createMirrorOrder($ccxt_exchange, $ccxt_market_discovery, $limit_exchange_buy_order, $symbol, $min_deal_amount, $amount_precision, true);
+                             createMirrorOrder($ccxt_exchange, $ccxt_market_discovery, $limit_exchange_buy_order, $symbol, $min_deal_amount, $amount_increment, true);
                      } else
-                         createMirrorOrder($ccxt_exchange, $ccxt_market_discovery, $limit_exchange_buy_order, $symbol, $min_deal_amount, $amount_precision, true);
+                         createMirrorOrder($ccxt_exchange, $ccxt_market_discovery, $limit_exchange_buy_order, $symbol, $min_deal_amount, $amount_increment, true);
                  } else
-                     createMirrorOrder($ccxt_exchange, $ccxt_market_discovery, $limit_exchange_buy_order, $symbol, $min_deal_amount, $amount_precision, true);
+                     createMirrorOrder($ccxt_exchange, $ccxt_market_discovery, $limit_exchange_buy_order, $symbol, $min_deal_amount, $amount_increment, true);
              } else {
                  if (proofOrderbooks($orderbooks, $use_markets)) {
                      $balances[$market_discovery] = $api_keys_market_discovery->getBalances($assets);
@@ -160,8 +160,8 @@ while (true) {
                              $profits,
                              $fees[$exchange]['maker'],
                              $fees[$market_discovery]['taker'],
-                             $amount_precision,
-                             $price_precision
+                             $amount_increment,
+                             $price_increment
                          );
 
                          if ($counting_buy && $counting_buy['market_discovery']['confidence_interval']['price_min'] > $positions[$symbol]['buy']['price']) {
@@ -175,8 +175,8 @@ while (true) {
                                          $profits,
                                          $fees[$exchange]['taker'],
                                          $fees[$market_discovery]['taker'],
-                                         $amount_precision,
-                                         $price_precision
+                                         $amount_increment,
+                                         $price_increment
                                      );
                                  }
 
@@ -212,7 +212,7 @@ while (true) {
     echo '[' . date('Y-m-d H:i:s') . '] [END] --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------' . PHP_EOL;
 }
 
-function createMirrorOrder(Ccxt $ccxt_exchange, Ccxt $ccxt_market_discovery, &$limit_exchange_order, $symbol, $min_deal_amount, $amount_precision, $is_cancel_order): void
+function createMirrorOrder(Ccxt $ccxt_exchange, Ccxt $ccxt_market_discovery, &$limit_exchange_order, $symbol, $min_deal_amount, $amount_increment, $is_cancel_order): void
 {
     if ($is_cancel_order) {
         $cancel_order = $ccxt_exchange->cancelOrder($limit_exchange_order['info']['id'], $symbol);
@@ -228,7 +228,7 @@ function createMirrorOrder(Ccxt $ccxt_exchange, Ccxt $ccxt_market_discovery, &$l
 
     if ($get_order_status = $ccxt_exchange->getOrderStatus($limit_exchange_order['info']['id'], $symbol)) {
         if (!Math::compareFloats($get_order_status['filled'], $limit_exchange_order['filled'])) {
-            $amount = Math::incrementNumber($get_order_status['filled'] - $limit_exchange_order['filled'], $amount_precision);
+            $amount = Math::incrementNumber($get_order_status['filled'] - $limit_exchange_order['filled'], $amount_increment);
 
             if ($amount * $limit_exchange_order['counting']['market_discovery']['confidence_interval']['price_min'] > $min_deal_amount) {
                 if (
@@ -311,19 +311,19 @@ function getPositions(array $balances, array $prices, string $exchange, string $
     return $positions ?? [];
 }
 
-function exchangeSellMarketDiscoveryBuy(array $orderbook, float $must_get_amount, array $profits, float $fee_exchange, float $fee_market_discovery, float $amount_precision, float $price_precision): array
+function exchangeSellMarketDiscoveryBuy(array $orderbook, float $must_get_amount, array $profits, float $fee_exchange, float $fee_market_discovery, float $amount_increment, float $price_increment): array
 {
     $counting['market_discovery']['amount']['clean'] = $must_get_amount;
-    $counting['market_discovery']['amount']['dirty'] = Math::incrementNumber($must_get_amount / (1 - $fee_market_discovery / 100), $amount_precision, true);
+    $counting['market_discovery']['amount']['dirty'] = Math::incrementNumber($must_get_amount / (1 - $fee_market_discovery / 100), $amount_increment, true);
 
-    if ($imitation_market_order = imitationMarketOrderBuy($orderbook, $counting['market_discovery']['amount']['dirty'], $price_precision)) {
+    if ($imitation_market_order = imitationMarketOrderBuy($orderbook, $counting['market_discovery']['amount']['dirty'], $price_increment)) {
         $counting['market_discovery']['quote'] = $imitation_market_order['quote'];
         $counting['market_discovery']['price'] = $imitation_market_order['price'];
         $counting['market_discovery']['symbol'] = $orderbook['symbol'];
         $counting['market_discovery']['side'] = 'buy';
 
         $counting['exchange']['amount'] = $must_get_amount;
-        $counting['exchange']['price'] = Math::incrementNumber($counting['market_discovery']['price'] / ((1 - $fee_market_discovery / 100) * (1 - $fee_exchange / 100) * (1 - $profits['optimal'] / 100)), $price_precision);
+        $counting['exchange']['price'] = Math::incrementNumber($counting['market_discovery']['price'] / ((1 - $fee_market_discovery / 100) * (1 - $fee_exchange / 100) * (1 - $profits['optimal'] / 100)), $price_increment);
 
         $counting['exchange']['quote']['dirty'] = $counting['exchange']['amount'] * $counting['exchange']['price'];
         $counting['exchange']['quote']['clean'] = $counting['exchange']['quote']['dirty'] * (1 - $fee_exchange / 100);
@@ -339,21 +339,21 @@ function exchangeSellMarketDiscoveryBuy(array $orderbook, float $must_get_amount
     return [];
 }
 
-function exchangeBuyMarketDiscoverySell(array $orderbook, float $must_get_quote, array $profits, float $fee_exchange, float $fee_market_discovery, float $amount_precision, float $price_precision): array
+function exchangeBuyMarketDiscoverySell(array $orderbook, float $must_get_quote, array $profits, float $fee_exchange, float $fee_market_discovery, float $amount_increment, float $price_increment): array
 {
     $counting['market_discovery']['quote']['clean'] = $must_get_quote;
     $counting['market_discovery']['quote']['dirty'] = $must_get_quote / (1 - $fee_market_discovery / 100);
 
-    if ($imitation_market_order = imitationMarketOrderSell($orderbook, $counting['market_discovery']['quote']['dirty'], $amount_precision, $price_precision)) {
+    if ($imitation_market_order = imitationMarketOrderSell($orderbook, $counting['market_discovery']['quote']['dirty'], $amount_increment, $price_increment)) {
         $counting['market_discovery']['amount'] = $imitation_market_order['base'];
         $counting['market_discovery']['price'] = $imitation_market_order['price'];
         $counting['market_discovery']['symbol'] = $orderbook['symbol'];
         $counting['market_discovery']['side'] = 'sell';
 
         $counting['exchange']['quote'] = $must_get_quote;
-        $counting['exchange']['price'] = Math::incrementNumber($counting['market_discovery']['price'] * (1 - $fee_market_discovery / 100) * (1 - $fee_exchange / 100 - $profits['optimal'] / 100), $price_precision);
+        $counting['exchange']['price'] = Math::incrementNumber($counting['market_discovery']['price'] * (1 - $fee_market_discovery / 100) * (1 - $fee_exchange / 100 - $profits['optimal'] / 100), $price_increment);
 
-        $counting['exchange']['amount']['dirty'] = Math::incrementNumber($counting['exchange']['quote'] / $counting['exchange']['price'], $amount_precision, true);
+        $counting['exchange']['amount']['dirty'] = Math::incrementNumber($counting['exchange']['quote'] / $counting['exchange']['price'], $amount_increment, true);
         $counting['exchange']['amount']['clean'] = $counting['exchange']['amount']['dirty'] * (1 - $fee_exchange / 100);
         $counting['exchange']['symbol'] = $orderbook['symbol'];
         $counting['exchange']['side'] = 'buy';
@@ -367,7 +367,7 @@ function exchangeBuyMarketDiscoverySell(array $orderbook, float $must_get_quote,
     return [];
 }
 
-function imitationMarketOrderBuy(array $orderbook, float $must_amount, float $price_precision): array
+function imitationMarketOrderBuy(array $orderbook, float $must_amount, float $price_increment): array
 {
     $am = $must_amount;
     $quote = 0;
@@ -383,7 +383,7 @@ function imitationMarketOrderBuy(array $orderbook, float $must_amount, float $pr
 
             return [
                 'quote' => $quote,
-                'price' => Math::incrementNumber($quote / $must_amount, $price_precision, true)
+                'price' => Math::incrementNumber($quote / $must_amount, $price_increment, true)
             ];
         }
     }
@@ -391,7 +391,7 @@ function imitationMarketOrderBuy(array $orderbook, float $must_amount, float $pr
     return [];
 }
 
-function imitationMarketOrderSell(array $orderbook, float $must_quote, float $amount_precision, float $price_precision): array
+function imitationMarketOrderSell(array $orderbook, float $must_quote, float $amount_increment, float $price_increment): array
 {
     $am = $must_quote;
     $base = 0;
@@ -405,11 +405,11 @@ function imitationMarketOrderSell(array $orderbook, float $must_quote, float $am
         } else {
             $base += $am / $price;
 
-            $base_final = Math::incrementNumber($base, $amount_precision, true);
+            $base_final = Math::incrementNumber($base, $amount_increment, true);
 
             return [
                 'base' => $base_final,
-                'price' => Math::incrementNumber($must_quote / $base_final, $price_precision, true)
+                'price' => Math::incrementNumber($must_quote / $base_final, $price_increment, true)
             ];
         }
     }

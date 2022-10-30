@@ -5,7 +5,7 @@ use Src\Support\Config;
 use Src\Support\Math;
 
 require_once dirname(__DIR__, 2) . '/index.php';
-
+$argv[1] = 'BTC/USDT';
 if (!isset($argv[1]))
     die('Set parameter: symbol');
 
@@ -68,7 +68,7 @@ while (true) {
                      createMirrorOrder($ccxt_exchange, $ccxt_market_discovery, $limit_exchange_sell_order, $symbol, $min_deal_amount, $amount_increment, true);
              } else {
                  if (proofOrderbooks($orderbooks, $use_markets)) {
-                     $balances[$market_discovery] = $api_keys_market_discovery->getBalances($assets);
+                     $balances[$market_discovery] = $ccxt_market_discovery->getBalances($assets);
                      $balances[$exchange] = $ccxt_exchange->getBalances($assets);
 
                      if (!empty($balances[$exchange]) && !empty($balances[$market_discovery])) {
@@ -147,7 +147,7 @@ while (true) {
                      createMirrorOrder($ccxt_exchange, $ccxt_market_discovery, $limit_exchange_buy_order, $symbol, $min_deal_amount, $amount_increment, true);
              } else {
                  if (proofOrderbooks($orderbooks, $use_markets)) {
-                     $balances[$market_discovery] = $api_keys_market_discovery->getBalances($assets);
+                     $balances[$market_discovery] = $ccxt_market_discovery->getBalances($assets);
                      $balances[$exchange] = $ccxt_exchange->getBalances($assets);
 
                      if (!empty($balances[$exchange]) && !empty($balances[$market_discovery])) {

@@ -5,7 +5,7 @@ use Src\Support\Pm2;
 
 require_once dirname(__DIR__, 3) . '/index.php';
 
-$watchers = Config::config('services_orderbooks', 'watchers', 'dev');
+$watchers = Config::file('services_orderbooks', 'watchers');
 
 foreach ($watchers as $service_name => $settings)
     foreach ($settings as $key => $setting) {

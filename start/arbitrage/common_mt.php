@@ -51,10 +51,9 @@ while (true) {
              if (isset($limit_exchange_sell_order)) {
                  if (isset($orderbooks[$market_discovery][$symbol])) {
                      if (
-                         $imitation_market_order = imitationMarketOrderSell(
+                         $imitation_market_order = imitationMarketOrderBuy(
                              $orderbooks[$market_discovery][$symbol],
-                             $limit_exchange_sell_order['market_discovery']['quote']['dirty'],
-                             $amount_increment,
+                             $limit_exchange_sell_order['counting']['market_discovery']['amount']['dirty'],
                              $price_increment
                          )
                      ) {
@@ -131,9 +130,10 @@ while (true) {
              if (isset($limit_exchange_buy_order)) {
                  if (isset($orderbooks[$market_discovery][$symbol])) {
                      if (
-                         $imitation_market_order = imitationMarketOrderBuy(
+                         $imitation_market_order = imitationMarketOrderSell(
                              $orderbooks[$market_discovery][$symbol],
-                             $limit_exchange_buy_order['market_discovery']['amount'],
+                             $limit_exchange_buy_order['counting']['market_discovery']['quote']['dirty'],
+                             $amount_increment,
                              $price_increment
                          )
                      ) {

@@ -39,6 +39,8 @@ $api_keys_market_discovery = Config::file('keys', $market_discovery);
 $ccxt_exchange = Ccxt::init($exchange, api_key: $api_keys_exchange['api_public'], api_secret: $api_keys_exchange['api_private']);
 $ccxt_market_discovery = Ccxt::init($market_discovery, api_key: $api_keys_market_discovery['api_public'], api_secret: $api_keys_market_discovery['api_private']);
 
+$ccxt_exchange->cancelAllOrder($symbol);
+
 while (true) {
     sleep($sleep);
     echo '[' . date('Y-m-d H:i:s') . '] [START] --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------' . PHP_EOL;
@@ -97,7 +99,7 @@ while (true) {
                                  if ($rest_orderbook['bids'][0][0] > $counting_sell['exchange']['price']) {
                                      $counting_sell = exchangeSellMarketDiscoveryBuy(
                                          $orderbooks[$market_discovery][$symbol],
-                                         $positions[$symbol]['sell']['base_asset'],
+                                         Math::incrementNumber($positions[$symbol]['sell']['base_asset'] * 0.99, $amount_increment),
                                          $profits,
                                          $fees[$exchange]['taker'],
                                          $fees[$market_discovery]['taker'],
@@ -116,7 +118,7 @@ while (true) {
                                              $counting_sell['exchange']['price']
                                          )
                                      ) {
-                                         $limit_exchange_sell_order = ['filled' => 0, 'counting' => $counting_sell, 'info' => ['id' => $create_order['id']]];
+                                         $limit_exchange_sell_order = ['filled' => 0, 'counting' => $counting_sell, 'info' => ['id' => $create_order['id'], 'last_id_trades' => null]];
 
                                          echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order created: ' . $create_order['id'] . ' limit ' . $counting_sell['exchange']['side'] . ' ' . $counting_sell['exchange']['amount'] . ' ' . $counting_sell['exchange']['price'] . PHP_EOL;
                                      } else
@@ -183,7 +185,7 @@ while (true) {
                                  if ($rest_orderbook['asks'][0][0] < $counting_buy['exchange']['price']) {
                                      $counting_buy = exchangeBuyMarketDiscoverySell(
                                          $orderbooks[$market_discovery][$symbol],
-                                         $positions[$symbol]['buy']['quote_asset'],
+                                         $positions[$symbol]['buy']['quote_asset'] * 0.99,
                                          $profits,
                                          $fees[$exchange]['taker'],
                                          $fees[$market_discovery]['taker'],
@@ -202,7 +204,7 @@ while (true) {
                                              $counting_buy['exchange']['price']
                                          )
                                      ) {
-                                         $limit_exchange_buy_order = ['filled' => 0, 'counting' => $counting_buy, 'info' => ['id' => $create_order['id']]];
+                                         $limit_exchange_buy_order = ['filled' => 0, 'counting' => $counting_buy, 'info' => ['id' => $create_order['id'], 'last_id_trades' => null]];
 
                                          echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order created: ' . $create_order['id'] . ' limit ' . $counting_buy['exchange']['side'] . ' ' . $counting_buy['exchange']['amount']['dirty'] . ' ' . $counting_buy['exchange']['price'] . PHP_EOL;
                                      } else
@@ -237,30 +239,43 @@ function createMirrorOrder(Ccxt $ccxt_exchange, Ccxt $ccxt_market_discovery, &$l
 
         echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_order['info']['id'] . PHP_EOL;
     }
+    $my_trades = array_reverse(array_filter($ccxt_exchange->getMyTrades($symbol), fn($trade) => $trade['order'] == $limit_exchange_order['info']['id'] && $trade['side'] == $limit_exchange_order['counting']['exchange']['side']));
 
-    if ($get_order_status = $ccxt_exchange->getOrderStatus($limit_exchange_order['info']['id'], $symbol)) {
-        if (!Math::compareFloats($get_order_status['filled'], $limit_exchange_order['filled'])) {
-            $amount = Math::incrementNumber($get_order_status['filled'] - $limit_exchange_order['filled'], $amount_increment);
-
-            if ($amount * $limit_exchange_order['counting']['market_discovery']['confidence_interval']['price_min'] > $min_deal_amount) {
-                if (
-                    $create_order = $ccxt_market_discovery->createOrder(
-                        $symbol,
-                        'market',
-                        $limit_exchange_order['counting']['market_discovery']['side'],
-                        $amount
-                    )
-                ) {
-                    $limit_exchange_order['filled'] = $get_order_status['filled'];
-
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order created: ' . $create_order['id'] . ' market ' . $limit_exchange_order['counting']['market_discovery']['side'] . ' ' . $amount . PHP_EOL;
-                } else
-                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Can not create order!!!' . PHP_EOL;
+    if ($my_trades !== null) {
+        $id = null;
+        $amount = 0;
+        foreach ($my_trades as $my_trade) {
+            if ($my_trade == $limit_exchange_order['info']['last_id_trades']) {
+                break;
             }
+
+            $id = $my_trade['id'];
+            $amount += $my_trade['amount'];
         }
 
-        if (in_array($get_order_status['status'], ['canceled', 'closed']))
+        $amount = Math::incrementNumber($amount, $amount_increment);
+
+        if ($amount * $limit_exchange_order['counting']['market_discovery']['confidence_interval']['price_min'] > $min_deal_amount) {
+            if (
+                $create_order = $ccxt_market_discovery->createOrder(
+                    $symbol,
+                    'market',
+                    $limit_exchange_order['counting']['market_discovery']['side'],
+                    $amount
+                )
+            ) {
+                $limit_exchange_order['info']['last_id_trades'] = $id;
+                $limit_exchange_order['filled'] += $amount;
+
+                echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order created: ' . $create_order['id'] . ' market ' . $limit_exchange_order['counting']['market_discovery']['side'] . ' ' . $amount . PHP_EOL;
+            } else
+                echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Can not create order!!!' . PHP_EOL;
+        }
+
+        if (!array_filter($ccxt_exchange->getOpenOrders($symbol), fn($order) => $order['id'] == $limit_exchange_order['info']['id'])) {
+            echo '[' . date('Y-m-d H:i:s') . '] [UNSET]' . PHP_EOL;
             return true;
+        }
     } else
         echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Can not get order status!!!' . PHP_EOL;
 

@@ -12,18 +12,11 @@ class Ccxt
     public string $name;
     public ?array $markets;
     public ?array $format_markets;
-    private array $opportunities;
 
     public function __construct(Exchange $exchange)
     {
         $this->exchange = $exchange;
         $this->name = $exchange->id;
-
-        $this->opportunities = [
-            'not_able_get_order_status' => [
-                'exmo'
-            ]
-        ];
     }
 
     public static function init(string $exchange_name, bool $enableRateLimit = false, string $api_key = '', string $api_secret = '', array $ccxt_settings = []): static
@@ -68,14 +61,20 @@ class Ccxt
     public function getOrderStatus(string $order_id, string $symbol = null): array|null
     {
         try {
-            if (in_array($this->exchange->id, $this->opportunities['not_able_get_order_status'])) {
-                $orders = array_filter($this->getOpenOrders($symbol), fn($order) => $order['id'] == $order_id);
-                return array_shift($orders);
-            }
-
             return $this->exchange->fetch_order_status($order_id, $symbol);
         } catch (Exception $e) {
             Log::error($e, ['$order_id' => $order_id, '$symbol' => $symbol]);
+        }
+
+        return null;
+    }
+
+    public function getMyTrades(string $symbol = null, int $limit = 50): array|null
+    {
+        try {
+            return $this->exchange->fetch_my_trades($symbol, limit: $limit);
+        } catch (Exception $e) {
+            Log::error($e, ['$symbol' => $symbol]);
         }
 
         return null;

@@ -223,7 +223,7 @@ function createMirrorOrder(Ccxt $ccxt_exchange, Ccxt $ccxt_market_discovery, &$l
             return;
         }
 
-        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $cancel_order['id'] . PHP_EOL;
+        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_order['info']['id'] . PHP_EOL;
     }
 
     if ($get_order_status = $ccxt_exchange->getOrderStatus($limit_exchange_order['info']['id'], $symbol)) {

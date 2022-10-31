@@ -253,7 +253,7 @@ function createMirrorOrder(Ccxt $ccxt_exchange, Ccxt $ccxt_market_discovery, &$l
                 ) {
                     $limit_exchange_order['filled'] = $get_order_status['filled'];
 
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order created: ' . $create_order['id'] . ' market ' . $limit_exchange_order['counting']['market_discovery']['side'] . ' ' . $amount . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] MIRROR Order created: ' . $create_order['id'] . ' market ' . $limit_exchange_order['counting']['market_discovery']['side'] . ' ' . $amount . PHP_EOL;
                 } else
                     echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Can not create order!!!' . PHP_EOL;
             }

@@ -123,12 +123,15 @@ class Ccxt
         return null;
     }
 
-    public function cancelOrder(string $order_id, string $symbol = null): array|null
+    public function cancelOrder(string $order_id, string $symbol = null): array|bool|null
     {
         try {
             return $this->exchange->cancel_order($order_id, $symbol);
         } catch (Exception $e) {
             Log::error($e, ['$order_id' => $order_id, '$symbol' => $symbol]);
+
+            if (str_contains($e->getMessage(), 'Order was not found'))
+                return true;
         }
 
         return null;

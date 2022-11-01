@@ -236,6 +236,8 @@ function createMirrorOrder(Ccxt $ccxt_exchange, Ccxt $ccxt_market_discovery, &$l
         }
 
         echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_order['info']['id'] . PHP_EOL;
+    } else {
+        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order is now: ' . $limit_exchange_order['counting']['exchange']['price'] . ' Range: ' . $limit_exchange_order['counting']['market_discovery']['confidence_interval']['price_max'] . ' ' . $limit_exchange_order['counting']['market_discovery']['confidence_interval']['price_min'] . PHP_EOL;
     }
 
     if ($get_order_status = $ccxt_exchange->getOrderStatus($limit_exchange_order['info']['id'], $symbol)) {
@@ -267,10 +269,10 @@ function createMirrorOrder(Ccxt $ccxt_exchange, Ccxt $ccxt_market_discovery, &$l
     return false;
 }
 
-function isOrderInRange($limit_exchange_sell_order, $imitation_market_order): bool
+function isOrderInRange($limit_exchange_order, $imitation_market_order): bool
 {
-    return $imitation_market_order['price'] < $limit_exchange_sell_order['counting']['market_discovery']['confidence_interval']['price_max'] &&
-        $imitation_market_order['price'] > $limit_exchange_sell_order['counting']['market_discovery']['confidence_interval']['price_min'];
+    return $imitation_market_order['price'] < $limit_exchange_order['counting']['market_discovery']['confidence_interval']['price_max'] &&
+        $imitation_market_order['price'] > $limit_exchange_order['counting']['market_discovery']['confidence_interval']['price_min'];
 }
 
 function getPositions(array $balances, array $prices, string $exchange, string $market_discovery, string $quote_asset, array $markets, float $limitation_in_quote_asset = 10000): array

@@ -69,10 +69,10 @@ class Ccxt
         return null;
     }
 
-    public function getMyTrades(string $symbol = null, int $limit = 50): array|null
+    public function getMyTrades(string $symbol = null, int $limit = 50, float|string $since = null): array|null
     {
         try {
-            return $this->exchange->fetch_my_trades($symbol, limit: $limit);
+            return $this->exchange->fetch_my_trades($symbol, $since, $limit);
         } catch (Exception $e) {
             Log::error($e, ['$symbol' => $symbol]);
         }
@@ -216,5 +216,10 @@ class Ccxt
     public function getExchange(): Exchange
     {
         return $this->exchange;
+    }
+
+    public function milliseconds(): int|string
+    {
+        return $this->exchange->milliseconds();
     }
 }

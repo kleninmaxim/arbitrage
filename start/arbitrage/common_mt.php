@@ -75,6 +75,7 @@ while (true) {
                      $balances[$market_discovery] = $ccxt_market_discovery->getBalances($assets);
                      reduceBalances($balances[$market_discovery]);
                      $balances[$exchange] = $ccxt_exchange->getBalances($assets);
+                     reduceBalances($balances[$exchange]);
 
                      if (!empty($balances[$exchange]) && !empty($balances[$market_discovery])) {
                          $prices = getPrices($orderbooks, $market_discovery, $price_margin);
@@ -138,9 +139,7 @@ while (true) {
                      if (
                          $imitation_market_order = imitationMarketOrderSell(
                              $orderbooks[$market_discovery][$symbol],
-                             $limit_exchange_buy_order['counting']['market_discovery']['quote']['dirty'],
-                             $amount_increment,
-                             $price_increment
+                             $limit_exchange_buy_order['counting']['market_discovery']['quote']['dirty']
                          )
                      ) {
                          if (isOrderInRange($limit_exchange_buy_order, $imitation_market_order)) {
@@ -161,6 +160,7 @@ while (true) {
                      $balances[$market_discovery] = $ccxt_market_discovery->getBalances($assets);
                      reduceBalances($balances[$market_discovery]);
                      $balances[$exchange] = $ccxt_exchange->getBalances($assets);
+                     reduceBalances($balances[$exchange]);
 
                      if (!empty($balances[$exchange]) && !empty($balances[$market_discovery])) {
                          $prices = getPrices($orderbooks, $market_discovery, $price_margin);
@@ -211,8 +211,9 @@ while (true) {
                                      echo '[' . date('Y-m-d H:i:s') . '] [WARNING] May be not enough balance when taker' . PHP_EOL;
                              } else
                                  echo '[' . date('Y-m-d H:i:s') . '] [INFO] Can not create order, because not enough min deal amount' . PHP_EOL;
-                         } else
+                         } else {
                              echo '[' . date('Y-m-d H:i:s') . '] [WARNING] May be not enough balance' . PHP_EOL;
+                         }
                      }
                  } else
                      echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Orderbooks not proofed: ' . implode(', ', array_keys($orderbooks)) . PHP_EOL;
@@ -361,9 +362,9 @@ function exchangeBuyMarketDiscoverySell(array $orderbook, float $must_get_quote,
     $counting['market_discovery']['quote']['clean'] = $must_get_quote;
     $counting['market_discovery']['quote']['dirty'] = $must_get_quote / (1 - $fee_market_discovery / 100);
 
-    if ($imitation_market_order = imitationMarketOrderSell($orderbook, $counting['market_discovery']['quote']['dirty'], $amount_increment, $price_increment)) {
-        $counting['market_discovery']['amount'] = $imitation_market_order['base'];
-        $counting['market_discovery']['price'] = $imitation_market_order['price'];
+    if ($imitation_market_order = imitationMarketOrderSell($orderbook, $counting['market_discovery']['quote']['dirty'])) {
+        $counting['market_discovery']['amount'] = Math::incrementNumber($imitation_market_order['base'], $amount_increment);
+        $counting['market_discovery']['price'] = Math::incrementNumber($imitation_market_order['price'], $price_increment, true);
         $counting['market_discovery']['symbol'] = $orderbook['symbol'];
         $counting['market_discovery']['side'] = 'sell';
 
@@ -408,7 +409,7 @@ function imitationMarketOrderBuy(array $orderbook, float $must_amount, float $pr
     return [];
 }
 
-function imitationMarketOrderSell(array $orderbook, float $must_quote, float $amount_increment, float $price_increment): array
+function imitationMarketOrderSell(array $orderbook, float $must_quote): array
 {
     $am = $must_quote;
     $base = 0;
@@ -422,11 +423,9 @@ function imitationMarketOrderSell(array $orderbook, float $must_quote, float $am
         } else {
             $base += $am / $price;
 
-            $base_final = Math::incrementNumber($base, $amount_increment, true);
-
             return [
-                'base' => $base_final,
-                'price' => Math::incrementNumber($must_quote / $base_final, $price_increment, true)
+                'base' => $base,
+                'price' => $must_quote / $base
             ];
         }
     }

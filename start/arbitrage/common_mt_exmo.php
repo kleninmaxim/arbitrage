@@ -5,7 +5,7 @@ use Src\Support\Config;
 use Src\Support\Math;
 
 require_once dirname(__DIR__, 2) . '/index.php';
-$argv[1] = 'BTC/USDT';
+
 if (!isset($argv[1]))
     die('Set parameter: symbol');
 
@@ -77,6 +77,7 @@ while (true) {
                      $balances[$market_discovery] = $ccxt_market_discovery->getBalances($assets);
                      reduceBalances($balances[$market_discovery]);
                      $balances[$exchange] = $ccxt_exchange->getBalances($assets);
+                     reduceBalances($balances[$exchange]);
 
                      if (!empty($balances[$exchange]) && !empty($balances[$market_discovery])) {
                          $prices = getPrices($orderbooks, $market_discovery, $price_margin);
@@ -140,9 +141,7 @@ while (true) {
                      if (
                          $imitation_market_order = imitationMarketOrderSell(
                              $orderbooks[$market_discovery][$symbol],
-                             $limit_exchange_buy_order['counting']['market_discovery']['quote']['dirty'],
-                             $amount_increment,
-                             $price_increment
+                             $limit_exchange_buy_order['counting']['market_discovery']['quote']['dirty']
                          )
                      ) {
                          if (isOrderInRange($limit_exchange_buy_order, $imitation_market_order)) {
@@ -163,6 +162,7 @@ while (true) {
                      $balances[$market_discovery] = $ccxt_market_discovery->getBalances($assets);
                      reduceBalances($balances[$market_discovery]);
                      $balances[$exchange] = $ccxt_exchange->getBalances($assets);
+                     reduceBalances($balances[$exchange]);
 
                      if (!empty($balances[$exchange]) && !empty($balances[$market_discovery])) {
                          $prices = getPrices($orderbooks, $market_discovery, $price_margin);
@@ -213,8 +213,9 @@ while (true) {
                                      echo '[' . date('Y-m-d H:i:s') . '] [WARNING] May be not enough balance when taker' . PHP_EOL;
                              } else
                                  echo '[' . date('Y-m-d H:i:s') . '] [INFO] Can not create order, because not enough min deal amount' . PHP_EOL;
-                         } else
+                         } else {
                              echo '[' . date('Y-m-d H:i:s') . '] [WARNING] May be not enough balance' . PHP_EOL;
+                         }
                      }
                  } else
                      echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Orderbooks not proofed: ' . implode(', ', array_keys($orderbooks)) . PHP_EOL;
@@ -238,18 +239,23 @@ function createMirrorOrder(Ccxt $ccxt_exchange, Ccxt $ccxt_market_discovery, &$l
         }
 
         echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_order['info']['id'] . PHP_EOL;
+    } else {
+        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order is now: ' . $limit_exchange_order['counting']['exchange']['price'] . ' Range: ' . $limit_exchange_order['counting']['market_discovery']['confidence_interval']['price_max'] . ' ' . $limit_exchange_order['counting']['market_discovery']['confidence_interval']['price_min'] . PHP_EOL;
     }
-    $my_trades = array_reverse(array_filter($ccxt_exchange->getMyTrades($symbol), fn($trade) => $trade['order'] == $limit_exchange_order['info']['id'] && $trade['side'] == $limit_exchange_order['counting']['exchange']['side']));
 
-    if ($my_trades !== null) {
-        $id = null;
+    if ($my_trades = $ccxt_exchange->getMyTrades($symbol)) {
+        $my_trades = array_reverse(array_filter($my_trades, fn($trade) => $trade['order'] == $limit_exchange_order['info']['id'] && $trade['side'] == $limit_exchange_order['counting']['exchange']['side']));
+        $id = $limit_exchange_order['info']['last_id_trades'];
         $amount = 0;
         foreach ($my_trades as $my_trade) {
             if ($my_trade == $limit_exchange_order['info']['last_id_trades']) {
                 break;
             }
 
-            $id = $my_trade['id'];
+            if (!isset($first_trade)) {
+                $id = $my_trade['id'];
+                $first_trade = true;
+            }
             $amount += $my_trade['amount'];
         }
 
@@ -282,10 +288,10 @@ function createMirrorOrder(Ccxt $ccxt_exchange, Ccxt $ccxt_market_discovery, &$l
     return false;
 }
 
-function isOrderInRange($limit_exchange_sell_order, $imitation_market_order): bool
+function isOrderInRange($limit_exchange_order, $imitation_market_order): bool
 {
-    return $imitation_market_order['price'] < $limit_exchange_sell_order['counting']['market_discovery']['confidence_interval']['price_max'] &&
-        $imitation_market_order['price'] > $limit_exchange_sell_order['counting']['market_discovery']['confidence_interval']['price_min'];
+    return $imitation_market_order['price'] < $limit_exchange_order['counting']['market_discovery']['confidence_interval']['price_max'] &&
+        $imitation_market_order['price'] > $limit_exchange_order['counting']['market_discovery']['confidence_interval']['price_min'];
 }
 
 function getPositions(array $balances, array $prices, string $exchange, string $market_discovery, string $quote_asset, array $markets, float $limitation_in_quote_asset = 10000): array
@@ -374,9 +380,9 @@ function exchangeBuyMarketDiscoverySell(array $orderbook, float $must_get_quote,
     $counting['market_discovery']['quote']['clean'] = $must_get_quote;
     $counting['market_discovery']['quote']['dirty'] = $must_get_quote / (1 - $fee_market_discovery / 100);
 
-    if ($imitation_market_order = imitationMarketOrderSell($orderbook, $counting['market_discovery']['quote']['dirty'], $amount_increment, $price_increment)) {
-        $counting['market_discovery']['amount'] = $imitation_market_order['base'];
-        $counting['market_discovery']['price'] = $imitation_market_order['price'];
+    if ($imitation_market_order = imitationMarketOrderSell($orderbook, $counting['market_discovery']['quote']['dirty'])) {
+        $counting['market_discovery']['amount'] = Math::incrementNumber($imitation_market_order['base'], $amount_increment);
+        $counting['market_discovery']['price'] = Math::incrementNumber($imitation_market_order['price'], $price_increment, true);
         $counting['market_discovery']['symbol'] = $orderbook['symbol'];
         $counting['market_discovery']['side'] = 'sell';
 
@@ -421,7 +427,7 @@ function imitationMarketOrderBuy(array $orderbook, float $must_amount, float $pr
     return [];
 }
 
-function imitationMarketOrderSell(array $orderbook, float $must_quote, float $amount_increment, float $price_increment): array
+function imitationMarketOrderSell(array $orderbook, float $must_quote): array
 {
     $am = $must_quote;
     $base = 0;
@@ -435,11 +441,9 @@ function imitationMarketOrderSell(array $orderbook, float $must_quote, float $am
         } else {
             $base += $am / $price;
 
-            $base_final = Math::incrementNumber($base, $amount_increment, true);
-
             return [
-                'base' => $base_final,
-                'price' => Math::incrementNumber($must_quote / $base_final, $price_increment, true)
+                'base' => $base,
+                'price' => $must_quote / $base
             ];
         }
     }

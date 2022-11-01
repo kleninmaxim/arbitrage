@@ -232,7 +232,7 @@ function createMirrorOrder(Ccxt $ccxt_exchange, Ccxt $ccxt_market_discovery, &$l
     if ($is_cancel_order) {
         $cancel_order = $ccxt_exchange->cancelOrder($limit_exchange_order['info']['id'], $symbol);
 
-        if ($cancel_order) {
+        if ($cancel_order == null) {
             echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Can not cancel order!!!' . PHP_EOL;
 
             return false;

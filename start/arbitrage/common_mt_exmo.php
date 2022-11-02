@@ -5,7 +5,7 @@ use Src\Support\Config;
 use Src\Support\Math;
 
 require_once dirname(__DIR__, 2) . '/index.php';
-
+$argv[1] = 'BTC/USDT'; //TODO: delete argv
 if (!isset($argv[1]))
     die('Set parameter: symbol');
 
@@ -248,7 +248,7 @@ function createMirrorOrder(Ccxt $ccxt_exchange, Ccxt $ccxt_market_discovery, &$l
         $id = $limit_exchange_order['info']['last_id_trades'];
         $amount = 0;
         foreach ($my_trades as $my_trade) {
-            if ($my_trade == $limit_exchange_order['info']['last_id_trades']) {
+            if ($my_trade['id'] == $limit_exchange_order['info']['last_id_trades']) {
                 break;
             }
 

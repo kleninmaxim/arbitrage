@@ -5,7 +5,7 @@ use Src\Support\Config;
 use Src\Support\Math;
 
 require_once dirname(__DIR__, 2) . '/index.php';
-$argv[1] = 'BTC/USDT'; //TODO: delete argv
+
 if (!isset($argv[1]))
     die('Set parameter: symbol');
 

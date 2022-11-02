@@ -69,7 +69,7 @@ class Ccxt
         return null;
     }
 
-    public function getMyTrades(string $symbol = null, int $limit = 50, float|string $since = null): array|null
+    public function getMyTrades(string|array $symbol = null, int $limit = 50, float|string $since = null): array|null
     {
         try {
             return $this->exchange->fetch_my_trades($symbol, $since, $limit);

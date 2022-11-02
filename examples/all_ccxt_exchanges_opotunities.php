@@ -18,6 +18,7 @@ foreach (array_diff($exchanges, $diff) as $exchange) {
         '                                       has createOrder: ' . ($ccxt->has['createOrder'] ? 'true' : 'false') . PHP_EOL .
         '                                       has cancelOrder: ' . ($ccxt->has['cancelOrder'] ? 'true' : 'false') . PHP_EOL .
         '                                       has fetchBalance: ' . ($ccxt->has['fetchBalance'] ? 'true' : 'false') . PHP_EOL .
+        '                                       has fetchMyTrades: ' . ($ccxt->has['fetchMyTrades'] ? 'true' : 'false') . PHP_EOL .
         '                                       has fetchOpenOrders: ' . ($ccxt->has['fetchOpenOrders'] ? 'true' : 'false') . PHP_EOL .
         '                                       has fetchOrder: ' . ($ccxt->has['fetchOrder'] ? 'true' : 'false') . PHP_EOL .
         '                                       has fetchOrders: ' . ($ccxt->has['fetchOrders'] ? 'true' : 'false') .
@@ -35,6 +36,9 @@ foreach (array_diff($exchanges, $diff) as $exchange) {
     if (!$ccxt->has['fetchBalance'])
         $no_fetchBalance[] = $exchange;
 
+    if (!$ccxt->has['fetchBalance'])
+        $no_fetchMyTrades[] = $exchange;
+
     if (!$ccxt->has['fetchOpenOrders'])
         $no_fetchOpenOrders[] = $exchange;
 
@@ -49,6 +53,7 @@ echo '[fetchOrderBook] ' . implode(', ', $no_fetchOrderBook ?? []) . PHP_EOL;
 echo '[createOrder] ' . implode(', ', $no_createOrder ?? []) . PHP_EOL;
 echo '[cancelOrder] ' . implode(', ', $no_cancelOrder ?? []) . PHP_EOL;
 echo '[fetchBalance] ' . implode(', ', $no_fetchBalance ?? []) . PHP_EOL;
+echo '[fetchMyTrades] ' . implode(', ', $no_fetchMyTrades ?? []) . PHP_EOL;
 echo '[fetchOpenOrders] ' . implode(', ', $no_fetchOpenOrders ?? []) . PHP_EOL;
 echo '[fetchOrder] ' . implode(', ', $no_fetchOrder ?? []) . PHP_EOL;
 echo '[fetchOrders] ' . implode(', ', $no_fetchOrders ?? []) . PHP_EOL;

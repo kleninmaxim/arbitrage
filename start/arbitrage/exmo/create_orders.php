@@ -65,7 +65,8 @@ while (true) {
                         $ccxt_exchange->cancelOrder($limit_exchange_sell_order['info']['id'], $symbol);
                         echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_sell_order['info']['id'] . PHP_EOL;
                         unset($limit_exchange_sell_order);
-                    }
+                    } else
+                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order is now: ' . $limit_exchange_sell_order['counting']['exchange']['price'] . ' Range: ' . $limit_exchange_sell_order['counting']['market_discovery']['confidence_interval']['price_max'] . ' ' . $limit_exchange_sell_order['counting']['market_discovery']['confidence_interval']['price_min'] . PHP_EOL;
                 } elseif ((microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > 3)
                     unset($limit_exchange_sell_order);
             } else {
@@ -153,7 +154,9 @@ while (true) {
                         $ccxt_exchange->cancelOrder($limit_exchange_buy_order['info']['id'], $symbol);
                         echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_buy_order['info']['id'] . PHP_EOL;
                         unset($limit_exchange_buy_order);
-                    }
+                    } else
+                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order is now: ' . $limit_exchange_buy_order['counting']['exchange']['price'] . ' Range: ' . $limit_exchange_buy_order['counting']['market_discovery']['confidence_interval']['price_max'] . ' ' . $limit_exchange_buy_order['counting']['market_discovery']['confidence_interval']['price_min'] . PHP_EOL;
+
                 } elseif ((microtime(true) - $limit_exchange_buy_order['info']['timestamp']) > 3)
                     unset($limit_exchange_buy_order);
             } else {

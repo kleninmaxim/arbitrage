@@ -7,6 +7,7 @@ use Src\Support\Math;
 use function Ratchet\Client\connect;
 
 require_once dirname(__DIR__, 3) . '/index.php';
+require_once __DIR__ . '/helper/exmo_functions.php';
 
 connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
     // CONFIG
@@ -26,7 +27,7 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
     // API KEYS
 
     // CCXT
-    $ccxt_exchange = Ccxt::init($exchange, api_key: $api_keys_exchange['api_public'], api_secret: $api_keys_exchange['api_private']);
+    $ccxt_exchange = Ccxt::init($exchange);
     $ccxt_market_discovery = Ccxt::init($market_discovery, api_key: $api_keys_market_discovery['api_public'], api_secret: $api_keys_market_discovery['api_private']);
     // CCXT
 
@@ -67,15 +68,15 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
                 // FORM MEMCACHED MIRROR TRADE INFO
                 $memcached_key = 'mirrorTrades_' . $exchange;
                 $memcached_mirror_trades_info = $memcached->get($memcached_key);
-                if (microtime(true) - $memcached_mirror_trades_info['timestamp'] < 86400)
+                if (!empty($memcached_mirror_trades_info['timestamp']) && (microtime(true) - $memcached_mirror_trades_info['timestamp'] > 86400))
                     unset($memcached_mirror_trades_info);
 
                 if (empty($memcached_mirror_trades_info['data']['leftovers'][$symbol]))
-                    $memcached_mirror_trades_info['leftovers'][$symbol] = ['sell' => 0, 'buy' => 0];
+                    $memcached_mirror_trades_info['data']['leftovers'][$symbol] = ['sell' => 0, 'buy' => 0];
                 // FORM MEMCACHED MIRROR TRADE INFO
 
                 $amount = Math::incrementNumber(
-                    $data['data']['amount'] + $memcached_mirror_trades_info['leftovers'][$symbol][$side],
+                    $data['data']['amount'] + $memcached_mirror_trades_info['data']['leftovers'][$symbol][$side],
                     $info_of_markets[$symbol]['amount_increment']
                 );
                 // PRE COUNT
@@ -84,10 +85,10 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
                 if ($amount * $price > $min_deal_amount) {
                     $ccxt_market_discovery->createOrder($symbol, $type, $side, $amount);
 
-                    $memcached_mirror_trades_info['leftovers'][$symbol][$side] = 0;
+                    $memcached_mirror_trades_info['data']['leftovers'][$symbol][$side] = 0;
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Create mirror order: ' . $symbol . ', ' . $type . ', ' . $side . ', ' . $price . ', ' . $amount . PHP_EOL;
                 } else {
-                    $memcached_mirror_trades_info['leftovers'][$symbol][$side] += $data['data']['amount'];
+                    $memcached_mirror_trades_info['data']['leftovers'][$symbol][$side] += $data['data']['amount'];
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Less amount: ' . $symbol . ', ' . $type . ', ' . $side . ', ' . $price . ', ' . $amount . PHP_EOL;
                 }
                 // DECISION BY CREATE ORDER
@@ -118,136 +119,3 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
 }, function (\Exception $e) {
     echo "Could not connect: {$e->getMessage()}" . PHP_EOL;
 });
-
-/**
- * @throws Exception
- */
-function processWebsocketData(mixed $data, array $options): array
-{
-    if ($is = isConnectionEstablished($data))
-        return $is;
-
-    if ($is = isLoggedIn($data))
-        return $is;
-
-    if ($is = isSubscribed($data))
-        return $is;
-
-    if ($is = isUpdateSpotUserTrades($data, $options['markets']))
-        return $is;
-
-    return ['response' => 'error', 'data' => null];
-}
-
-function isUpdateSpotUserTrades($data, $markets): array
-{
-    if (
-        !empty($data['ts']) &&
-        !empty($data['event']) &&
-        !empty($data['topic']) &&
-        !empty($data['data']) &&
-        $data['event'] == 'update' &&
-        $data['topic'] == 'spot/user_trades'
-    ) {
-        $timestamp_in_seconds = floor($data['ts'] / 1000);
-
-        return [
-            'response' => 'isUpdateSpotUserTrades',
-            'data' => [
-                'symbol' => $markets['origin'][$data['data']['pair']],
-                'trade_id' => $data['data']['trade_id'],
-                'order_id' => $data['data']['order_id'],
-                'type' => $data['data']['type'],
-                'price' => $data['data']['price'],
-                'amount' => $data['data']['quantity'],
-                'quote' => $data['data']['amount'],
-                'timestamp' => $timestamp_in_seconds,
-                'trade_type' => $data['data']['exec_type'],
-                'datetime' => date('Y--m-d H:i:s', $timestamp_in_seconds),
-                'fee' => [
-                    'amount' => $data['data']['commission_amount'],
-                    'asset' => $data['data']['commission_currency']
-                ]
-            ]
-        ];
-    }
-
-    return [];
-}
-
-function isSubscribed($data): array
-{
-    if (
-        !empty($data['ts']) &&
-        !empty($data['event']) &&
-        !empty($data['id']) &&
-        !empty($data['topic']) &&
-        $data['event'] == 'subscribed'
-    ) {
-        $data['datetime'] = date('Y-m-d H:i:s', floor($data['ts'] / 1000));
-
-        return ['response' => 'isSubscribed', 'data' => $data];
-    }
-
-    return [];
-}
-
-function isLoggedIn($data): array
-{
-    if (
-        !empty($data['ts']) &&
-        !empty($data['event']) &&
-        !empty($data['id']) &&
-        $data['event'] == 'logged_in'
-    ) {
-        $data['datetime'] = date('Y-m-d H:i:s', floor($data['ts'] / 1000));
-
-        return ['response' => 'isLoggedIn', 'data' => $data];
-    }
-
-    return [];
-}
-
-/**
- * @throws Exception
- */
-function isConnectionEstablished($data): array
-{
-    if (
-        !empty($data['ts']) &&
-        !empty($data['event']) &&
-        !empty($data['code']) &&
-        !empty($data['message']) &&
-        !empty($data['session_id'])
-    ) {
-        if ($data['event'] == 'info' && $data['code'] == 1 && $data['message'] == 'connection established') {
-            $data['datetime'] = date('Y-m-d H:i:s', floor($data['ts'] / 1000));
-
-            return ['response' => 'isConnectionEstablished', 'data' => $data];
-        }
-
-        throw new Exception('Connect was unsuccessful');
-    }
-
-    return [];
-}
-
-function originCcxtMarketIds(array $fetch_markets, array $use_markets): array
-{
-    foreach (
-        array_filter(
-            $fetch_markets,
-            fn($market) => in_array($market, $use_markets),
-            ARRAY_FILTER_USE_KEY
-        ) as $symbol => $market
-    ) {
-        $markets['origin'][$market['id']] = $symbol;
-        $markets['ccxt'][$symbol] = $market;
-    }
-    return $markets ?? [];
-}
-
-function generateSignature(string $api_public, string $api_private, string $nonce): string
-{
-    return base64_encode(hash_hmac('sha512', $api_public . $nonce, $api_private, true));
-}

@@ -30,8 +30,12 @@ if ($exchange->has['watchBalance']) {
         // COUNT NECESSARY INFO
         $memcached = \Src\Databases\Memcached::init();
         $key = 'accountInfo_' . $market_discovery;
-        $memcached->set($key, $ccxt_market_discovery->getBalances($assets));
+        $balances = $ccxt_market_discovery->getBalances($assets);
+        $memcached->set($key, $balances);
         // COUNT NECESSARY INFO
+
+        foreach ($balances as $asset => $balance)
+            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balance update: ' . $asset . ', free: ' . $balance['free'] . ', used: ' . $balance['used'] . ', total: ' . $balance['total'] . PHP_EOL;
 
         while (true) {
             try {
@@ -42,12 +46,12 @@ if ($exchange->has['watchBalance']) {
                 $balance = yield $exchange->watch_balance();
                 foreach ($balance as $key => $item)
                     if (in_array($key, $assets)) {
-                        $account_info['balances']['data'][$key] = $item;
+                        $account_info['data']['balances'][$key] = $item;
                         echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balance update: ' . $key . ', free: ' . $item['free'] . ', used: ' . $item['used'] . ', total: ' . $item['total'] . PHP_EOL;
                     }
 
                 // END COUNTING
-                $memcached->set($key, $account_info['balances']['data']);
+                $memcached->set($key, $account_info['data']['balances']);
                 // END COUNTING;
             } catch (Exception $e) {
                 echo get_class($e), ' ', $e->getMessage(), "\n";

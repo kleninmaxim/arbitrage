@@ -3,6 +3,7 @@
 use ccxt\pro\binance;
 use Src\Crypto\Ccxt;
 use Src\Support\Config;
+use Src\Support\Log;
 
 require_once dirname(__DIR__, 3) . '/index.php';
 
@@ -29,9 +30,9 @@ if ($exchange->has['watchBalance']) {
 
         // COUNT NECESSARY INFO
         $memcached = \Src\Databases\Memcached::init();
-        $key = 'accountInfo_' . $market_discovery;
+        $memcached_key = 'accountInfo_' . $market_discovery;
         $balances = $ccxt_market_discovery->getBalances($assets);
-        $memcached->set($key, ['balances' => $balances]);
+        $memcached->set($memcached_key, ['balances' => $balances]);
         // COUNT NECESSARY INFO
 
         foreach ($balances as $asset => $balance)
@@ -40,7 +41,7 @@ if ($exchange->has['watchBalance']) {
         while (true) {
             try {
                 // PRE COUNT
-                $account_info = $memcached->get($key);
+                $account_info = $memcached->get($memcached_key);
                 // PRE COUNT
 
                 $balance = yield $exchange->watch_balance();
@@ -51,11 +52,11 @@ if ($exchange->has['watchBalance']) {
                     }
 
                 // END COUNTING
-                $memcached->set($key, $account_info['data']['balances']);
+                $memcached->set($memcached_key, $account_info['data']);
                 // END COUNTING;
             } catch (Exception $e) {
                 echo get_class($e), ' ', $e->getMessage(), "\n";
-                \Src\Support\Log::error($e, 'Unexpected error');
+                Log::error($e, 'Unexpected error');
             }
         }
     });

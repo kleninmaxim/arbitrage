@@ -65,8 +65,8 @@ class Memcached
         return $this->prefix . $key;
     }
 
-    private function setValueFormat(mixed $value): array
+    private function setValueFormat(mixed $data): array
     {
-        return ['data' => $value, 'timestamp' => microtime(true)];
+        return ['data' => $data, 'timestamp' => microtime(true)];
     }
 }

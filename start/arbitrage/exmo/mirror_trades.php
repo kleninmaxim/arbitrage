@@ -63,6 +63,7 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
                 $price = $data['data']['price'];
                 // TRADES RESULT
 
+                // PRE COUNT
                 // FORM MEMCACHED MIRROR TRADE INFO
                 $memcached_key = 'mirrorTrades_' . $exchange;
                 $memcached_mirror_trades_info = $memcached->get($memcached_key);
@@ -73,7 +74,6 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
                     $memcached_mirror_trades_info['leftovers'][$symbol] = ['sell' => 0, 'buy' => 0];
                 // FORM MEMCACHED MIRROR TRADE INFO
 
-                // PRE COUNT
                 $amount = Math::incrementNumber(
                     $data['data']['amount'] + $memcached_mirror_trades_info['leftovers'][$symbol][$side],
                     $info_of_markets[$symbol]['amount_increment']
@@ -93,7 +93,8 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
                 // DECISION BY CREATE ORDER
 
                 // END COUNTING
-                $memcached->set($memcached_key, $memcached_mirror_trades_info);
+                $memcached->set($memcached_key, $memcached_mirror_trades_info['data']);
+                echo '[' . date('Y-m-d H:i:s') . '] [INFO] Trade was: ' . $symbol . ', ' . $data['data']['type'] . ', ' . $data['data']['side'] . ', ' . $price . ', ' . $data['data']['amount'] . PHP_EOL;
                 // END COUNTING
             } elseif ($data['response'] == 'isConnectionEstablished') {
                 echo '[' . date('Y-m-d H:i:s') . '] [INFO] Connection is established with session id: ' . $data['data']['session_id'] . PHP_EOL;

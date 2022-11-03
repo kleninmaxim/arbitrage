@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "ccxt/ccxt",
-            "version": "2.1.10",
+            "version": "2.1.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ccxt/ccxt.git",
-                "reference": "503045ae54b23ee72b68380a786107d845685470"
+                "reference": "ff371452d5b1c702522c411b446d667c7f41ae5f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ccxt/ccxt/zipball/503045ae54b23ee72b68380a786107d845685470",
-                "reference": "503045ae54b23ee72b68380a786107d845685470",
+                "url": "https://api.github.com/repos/ccxt/ccxt/zipball/ff371452d5b1c702522c411b446d667c7f41ae5f",
+                "reference": "ff371452d5b1c702522c411b446d667c7f41ae5f",
                 "shasum": ""
             },
             "require": {
@@ -286,7 +286,7 @@
             ],
             "support": {
                 "issues": "https://github.com/ccxt/ccxt/issues",
-                "source": "https://github.com/ccxt/ccxt/tree/2.1.10"
+                "source": "https://github.com/ccxt/ccxt/tree/2.1.13"
             },
             "funding": [
                 {
@@ -294,7 +294,7 @@
                     "type": "open_collective"
                 }
             ],
-            "time": "2022-11-02T16:42:11+00:00"
+            "time": "2022-11-02T18:03:43+00:00"
         },
         {
             "name": "evenement/evenement",
@@ -1958,16 +1958,16 @@
         },
         {
             "name": "textalk/websocket",
-            "version": "1.6.1",
+            "version": "1.6.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Textalk/websocket-php.git",
-                "reference": "25848ca82ab7acbf249e57db6f3913c7792d07b4"
+                "reference": "3f8fd6f18a15f4e269416459fabff12d158c2f13"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Textalk/websocket-php/zipball/25848ca82ab7acbf249e57db6f3913c7792d07b4",
-                "reference": "25848ca82ab7acbf249e57db6f3913c7792d07b4",
+                "url": "https://api.github.com/repos/Textalk/websocket-php/zipball/3f8fd6f18a15f4e269416459fabff12d158c2f13",
+                "reference": "3f8fd6f18a15f4e269416459fabff12d158c2f13",
                 "shasum": ""
             },
             "require": {
@@ -2003,9 +2003,9 @@
             "description": "WebSocket client and server",
             "support": {
                 "issues": "https://github.com/Textalk/websocket-php/issues",
-                "source": "https://github.com/Textalk/websocket-php/tree/1.6.1"
+                "source": "https://github.com/Textalk/websocket-php/tree/1.6.2"
             },
-            "time": "2022-11-02T10:08:52+00:00"
+            "time": "2022-11-02T18:27:26+00:00"
         }
     ],
     "packages-dev": [

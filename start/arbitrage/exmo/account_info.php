@@ -64,7 +64,7 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
 
                 foreach ($data['data'] as $asset => $balance) {
                     $account_info['data']['balances'][$asset] = $balance;
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balance update: ' . $asset . ', free:' . $balance['free'] . ', used:' . $balance['used'] . ', total:' . $balance['total'] . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balance update: ' . $asset . ', free: ' . $balance['free'] . ', used: ' . $balance['used'] . ', total: ' . $balance['total'] . PHP_EOL;
                 }
 
                 // END COUNTING

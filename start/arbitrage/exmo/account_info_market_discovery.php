@@ -43,7 +43,7 @@ if ($exchange->has['watchBalance']) {
                 foreach ($balance as $key => $item)
                     if (in_array($key, $assets)) {
                         $account_info['balances']['data'][$key] = $item;
-                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balance update: ' . $key . ', free:' . $item['free'] . ', used:' . $item['used'] . ', total:' . $item['total'] . PHP_EOL;
+                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balance update: ' . $key . ', free: ' . $item['free'] . ', used: ' . $item['used'] . ', total: ' . $item['total'] . PHP_EOL;
                     }
 
                 // END COUNTING

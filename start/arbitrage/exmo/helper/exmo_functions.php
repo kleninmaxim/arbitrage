@@ -66,7 +66,7 @@ function isUpdateOrSnapshotSpotUserWallet($data, $assets): array
                         $data['data']['currency'] => [
                             'free' => $data['data']['balance'],
                             'used' => $data['data']['reserved'],
-                            'total' => Math::incrementNumber($data['data']['balances'] + $data['data']['reserved'], 0.00000001)
+                            'total' => Math::incrementNumber($data['data']['balance'] + $data['data']['reserved'], 0.00000001)
                         ]
                     ]
                 ];
@@ -132,7 +132,7 @@ function isUpdateSpotUserTrades($data, $markets): array
                 'trade_id' => $data['data']['trade_id'],
                 'order_id' => $data['data']['order_id'],
                 'symbol' => $markets['origin'][$data['data']['pair']],
-                'type' => $data['data']['type'],
+                'side' => $data['data']['type'],
                 'price' => $data['data']['price'],
                 'amount' => $data['data']['quantity'],
                 'quote' => $data['data']['amount'],

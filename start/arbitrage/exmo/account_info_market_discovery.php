@@ -31,7 +31,7 @@ if ($exchange->has['watchBalance']) {
         $memcached = \Src\Databases\Memcached::init();
         $key = 'accountInfo_' . $market_discovery;
         $balances = $ccxt_market_discovery->getBalances($assets);
-        $memcached->set($key, $balances);
+        $memcached->set($key, ['balances' => $balances]);
         // COUNT NECESSARY INFO
 
         foreach ($balances as $asset => $balance)

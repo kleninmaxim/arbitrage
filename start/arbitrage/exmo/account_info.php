@@ -58,7 +58,7 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
 
             if ($data['response'] == 'isUpdateOrSnapshotSpotUserWallet') {
                 // PRE COUNT
-                $memcached_key = 'account_info_' . $exchange;
+                $memcached_key = 'accountInfo_' . $exchange;
                 $account_info = $memcached->get($memcached_key);
                 // PRE COUNT
 
@@ -73,7 +73,7 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
             } elseif ($data['response'] == 'isUpdateOrSnapshotOrders') {
                 if ($order = $data['data']) {
                     // PRE COUNT
-                    $memcached_key = 'account_info_' . $exchange;
+                    $memcached_key = 'accountInfo_' . $exchange;
                     $account_info = $memcached->get($memcached_key);
                     // PRE COUNT
 

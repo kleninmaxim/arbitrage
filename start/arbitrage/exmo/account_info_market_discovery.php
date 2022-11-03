@@ -20,7 +20,7 @@ if ($exchange->has['watchBalance']) {
 
         // COUNT NECESSARY INFO
         $memcached = \Src\Databases\Memcached::init();
-        $key = 'account_info_' . $market_discovery;
+        $key = 'accountInfo_' . $market_discovery;
         // COUNT NECESSARY INFO
 
         while (true) {

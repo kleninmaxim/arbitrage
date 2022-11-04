@@ -42,8 +42,6 @@ $ccxt_market_discovery = Ccxt::init($market_discovery, api_key: $api_keys_market
 while (true) {
     sleep($sleep);
 
-    echo '[' . date('Y-m-d H:i:s') . '] [START] --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------' . PHP_EOL;
-    echo '[' . date('Y-m-d H:i:s') . ']     [START] Calculate sell exchange, buy market discovery positions--------------------------------------------------' . PHP_EOL;
     if ($data = $memcached->get($keys)) {
         list($orderbooks, $account_info) = formatMemcachedData($data);
 
@@ -52,7 +50,7 @@ while (true) {
         if (count($open_orders) > 1) {
             foreach ($open_orders as $open_order) {
                 $ccxt_exchange->cancelOrder($open_order['id'], $open_order['symbol']);
-                echo '[' . date('Y-m-d H:i:s') . ']          [WARNING] Cancel order before counting because open orders more than one: ' . $open_order['id'] . PHP_EOL;
+                echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Cancel order before counting because open orders more than one: ' . $open_order['id'] . PHP_EOL;
             }
             unset($limit_exchange_sell_order);
         } else {
@@ -64,17 +62,16 @@ while (true) {
                         !isOrderInRange($limit_exchange_sell_order, $imitation_market_order)
                     ) {
                         $ccxt_exchange->cancelOrder($limit_exchange_sell_order['info']['id'], $symbol);
-                        echo '[' . date('Y-m-d H:i:s') . ']          [INFO] Cancel order: ' . $limit_exchange_sell_order['info']['id'] . PHP_EOL;
+                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_sell_order['info']['id'] . PHP_EOL;
                         unset($limit_exchange_sell_order);
-                    } else
-                        echo '[' . date('Y-m-d H:i:s') . ']          [INFO] Order is now: ' . $limit_exchange_sell_order['counting']['exchange']['price'] . ' Range: ' . $limit_exchange_sell_order['counting']['market_discovery']['confidence_interval']['price_max'] . ' ' . $limit_exchange_sell_order['counting']['market_discovery']['confidence_interval']['price_min'] . PHP_EOL;
+                    }
                 } elseif ((microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > 3)
                     unset($limit_exchange_sell_order);
             } else {
                 if (count($open_orders) > 0) {
                     foreach ($open_orders as $open_order) {
                         $ccxt_exchange->cancelOrder($open_order['id'], $open_order['symbol']);
-                        echo '[' . date('Y-m-d H:i:s') . ']          [WARNING] Cancel order before proofOrderbooks because open orders more than one: ' . $open_order['id'] . PHP_EOL;
+                        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Cancel order before proofOrderbooks because open orders more than one: ' . $open_order['id'] . PHP_EOL;
                     }
                 } else {
                     if (proofOrderbooks($orderbooks, $use_markets)) {
@@ -122,25 +119,23 @@ while (true) {
                                     ) {
                                         $limit_exchange_sell_order = ['counting' => $counting_sell, 'info' => ['id' => $create_order['id'], 'filled' => 0, 'timestamp' => microtime(true)]];
 
-                                        echo '[' . date('Y-m-d H:i:s') . ']          [INFO] Order created: ' . $create_order['id'] . ' limit ' . $counting_sell['exchange']['side'] . ' ' . $counting_sell['exchange']['amount'] . ' ' . $counting_sell['exchange']['price'] . PHP_EOL;
+                                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order created: ' . $create_order['id'] . ' limit ' . $counting_sell['exchange']['side'] . ' ' . $counting_sell['exchange']['amount'] . ' ' . $counting_sell['exchange']['price'] . PHP_EOL;
+                                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order range: ' . $counting_sell['exchange']['price'] . ', ' . $counting_sell['market_discovery']['confidence_interval']['price_max'] . ', ' . $counting_sell['market_discovery']['confidence_interval']['price_min'] . PHP_EOL;
                                     } else
-                                        echo '[' . date('Y-m-d H:i:s') . ']          [WARNING] Can not create order!!!' . PHP_EOL;
+                                        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Can not create order!!!' . PHP_EOL;
                                 } else
-                                    echo '[' . date('Y-m-d H:i:s') . ']          [INFO] Can not create order, because not enough min deal amount' . PHP_EOL;
+                                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Can not create order, because not enough min deal amount' . PHP_EOL;
                             } else
-                                echo '[' . date('Y-m-d H:i:s') . ']          [WARNING] May be not enough balance' . PHP_EOL;
+                                echo '[' . date('Y-m-d H:i:s') . '] [WARNING] May be not enough balance' . PHP_EOL;
                         }
                     } else
-                        echo '[' . date('Y-m-d H:i:s') . ']          [WARNING] Orderbooks not proofed: ' . implode(', ', array_keys($orderbooks)) . PHP_EOL;
+                        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Orderbooks not proofed: ' . implode(', ', array_keys($orderbooks)) . PHP_EOL;
                 }
             }
         }
     } else
-        echo '[' . date('Y-m-d H:i:s') . ']          [WARNING] Memcached data is false!!!' . PHP_EOL;
-    echo '[' . date('Y-m-d H:i:s') . ']     [END] Calculate sell exchange, buy market discovery positions--------------------------------------------------' . PHP_EOL;
+        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Memcached data is false!!!' . PHP_EOL;
 
-
-    echo '[' . date('Y-m-d H:i:s') . ']     [START] Calculate buy exchange, sell market discovery positions--------------------------------------------------' . PHP_EOL;
     if ($data = $memcached->get($keys)) {
         list($orderbooks, $account_info) = formatMemcachedData($data);
 
@@ -149,7 +144,7 @@ while (true) {
         if (count($open_orders) > 1) {
             foreach ($open_orders as $open_order) {
                 $ccxt_exchange->cancelOrder($open_order['id'], $open_order['symbol']);
-                echo '[' . date('Y-m-d H:i:s') . ']          [WARNING] Cancel order before counting because open orders more than one: ' . $open_order['id'] . PHP_EOL;
+                echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Cancel order before counting because open orders more than one: ' . $open_order['id'] . PHP_EOL;
             }
             unset($limit_exchange_buy_order);
         } else {
@@ -161,18 +156,16 @@ while (true) {
                         !isOrderInRange($limit_exchange_buy_order, $imitation_market_order)
                     ) {
                         $ccxt_exchange->cancelOrder($limit_exchange_buy_order['info']['id'], $symbol);
-                        echo '[' . date('Y-m-d H:i:s') . ']          [INFO] Cancel order: ' . $limit_exchange_buy_order['info']['id'] . PHP_EOL;
+                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_buy_order['info']['id'] . PHP_EOL;
                         unset($limit_exchange_buy_order);
-                    } else
-                        echo '[' . date('Y-m-d H:i:s') . ']          [INFO] Order is now: ' . $limit_exchange_buy_order['counting']['exchange']['price'] . ' Range: ' . $limit_exchange_buy_order['counting']['market_discovery']['confidence_interval']['price_max'] . ' ' . $limit_exchange_buy_order['counting']['market_discovery']['confidence_interval']['price_min'] . PHP_EOL;
-
+                    }
                 } elseif ((microtime(true) - $limit_exchange_buy_order['info']['timestamp']) > 3)
                     unset($limit_exchange_buy_order);
             } else {
                 if (count($open_orders) > 0) {
                     foreach ($open_orders as $open_order) {
                         $ccxt_exchange->cancelOrder($open_order['id'], $open_order['symbol']);
-                        echo '[' . date('Y-m-d H:i:s') . ']          [WARNING] Cancel order before proofOrderbooks because open orders more than one: ' . $open_order['id'] . PHP_EOL;
+                        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Cancel order before proofOrderbooks because open orders more than one: ' . $open_order['id'] . PHP_EOL;
                     }
                 } else {
                     if (proofOrderbooks($orderbooks, $use_markets)) {
@@ -220,23 +213,22 @@ while (true) {
                                     ) {
                                         $limit_exchange_buy_order = ['counting' => $counting_buy, 'info' => ['id' => $create_order['id'], 'filled' => 0, 'timestamp' => microtime(true)]];
 
-                                        echo '[' . date('Y-m-d H:i:s') . ']          [INFO] Order created: ' . $create_order['id'] . ' limit ' . $counting_buy['exchange']['side'] . ' ' . $counting_buy['exchange']['amount']['dirty'] . ' ' . $counting_buy['exchange']['price'] . PHP_EOL;
+                                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order created: ' . $create_order['id'] . ' limit ' . $counting_buy['exchange']['side'] . ' ' . $counting_buy['exchange']['amount']['dirty'] . ' ' . $counting_buy['exchange']['price'] . PHP_EOL;
+                                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order range: ' . $counting_buy['exchange']['price'] . ', ' . $counting_buy['market_discovery']['confidence_interval']['price_max'] . ', ' . $counting_buy['market_discovery']['confidence_interval']['price_min'] . PHP_EOL;
                                     } else
-                                        echo '[' . date('Y-m-d H:i:s') . ']          [WARNING] Can not create order!!!' . PHP_EOL;
+                                        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Can not create order!!!' . PHP_EOL;
                                 } else
-                                    echo '[' . date('Y-m-d H:i:s') . ']          [INFO] Can not create order, because not enough min deal amount' . PHP_EOL;
+                                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Can not create order, because not enough min deal amount' . PHP_EOL;
                             } else
-                                echo '[' . date('Y-m-d H:i:s') . ']          [WARNING] May be not enough balance' . PHP_EOL;
+                                echo '[' . date('Y-m-d H:i:s') . '] [WARNING] May be not enough balance' . PHP_EOL;
                         }
                     } else
-                        echo '[' . date('Y-m-d H:i:s') . ']          [WARNING] Orderbooks not proofed: ' . implode(', ', array_keys($orderbooks)) . PHP_EOL;
+                        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Orderbooks not proofed: ' . implode(', ', array_keys($orderbooks)) . PHP_EOL;
                 }
             }
         }
     } else
-        echo '[' . date('Y-m-d H:i:s') . ']          [WARNING] Memcached data is false!!!' . PHP_EOL;
-    echo '[' . date('Y-m-d H:i:s') . ']     [END] Calculate buy exchange, sell market discovery positions--------------------------------------------------' . PHP_EOL;
-    echo '[' . date('Y-m-d H:i:s') . '] [END] --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------' . PHP_EOL;
+        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Memcached data is false!!!' . PHP_EOL;
 }
 
 function isOrderInRange($limit_exchange_order, $imitation_market_order): bool

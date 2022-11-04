@@ -41,7 +41,7 @@ if ($exchange->has['watchBalance']) {
         while (true) {
             try {
                 // PRE COUNT
-                $account_info = $memcached->get($memcached_key);
+                $account_info = $memcached->get($memcached_key) ?? ['data' => ['balances' => []]];
                 // PRE COUNT
 
                 $balance = yield $exchange->watch_balance();

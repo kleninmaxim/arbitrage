@@ -67,7 +67,7 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
                 // PRE COUNT
                 // FORM MEMCACHED MIRROR TRADE INFO
                 $memcached_key = 'mirrorTrades_' . $exchange;
-                $memcached_mirror_trades_info = $memcached->get($memcached_key);
+                $memcached_mirror_trades_info = $memcached->get($memcached_key) ?? ['data' => ['leftovers' => []], 'timestamp' => microtime(true)];
                 if (!empty($memcached_mirror_trades_info['timestamp']) && (microtime(true) - $memcached_mirror_trades_info['timestamp'] > 86400))
                     unset($memcached_mirror_trades_info);
 

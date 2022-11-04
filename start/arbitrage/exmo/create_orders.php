@@ -3,6 +3,7 @@
 use Src\Crypto\Ccxt;
 use Src\Support\Config;
 use Src\Support\Math;
+use Src\Support\Time;
 
 require_once dirname(__DIR__, 3) . '/index.php';
 
@@ -40,8 +41,6 @@ $ccxt_exchange = Ccxt::init($exchange, api_key: $api_keys_exchange['api_public']
 $ccxt_market_discovery = Ccxt::init($market_discovery, api_key: $api_keys_market_discovery['api_public'], api_secret: $api_keys_market_discovery['api_private']);
 
 while (true) {
-    sleep($sleep);
-
     if ($data = $memcached->get($keys)) {
         list($orderbooks, $account_info) = formatMemcachedData($data);
 
@@ -67,7 +66,7 @@ while (true) {
                     }
                 } elseif ((microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > 3)
                     unset($limit_exchange_sell_order);
-            } else {
+            } elseif (Time::up(1, 'create_order')) {
                 if (count($open_orders) > 0) {
                     foreach ($open_orders as $open_order) {
                         $ccxt_exchange->cancelOrder($open_order['id'], $open_order['symbol']);
@@ -160,7 +159,7 @@ while (true) {
                     }
                 } elseif ((microtime(true) - $limit_exchange_buy_order['info']['timestamp']) > 3)
                     unset($limit_exchange_buy_order);
-            } else {
+            } elseif (Time::up(1, 'create_order')) {
                 if (count($open_orders) > 0) {
                     foreach ($open_orders as $open_order) {
                         $ccxt_exchange->cancelOrder($open_order['id'], $open_order['symbol']);

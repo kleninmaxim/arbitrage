@@ -123,8 +123,7 @@ while (true) {
                                         echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order range: ' . $counting_sell['exchange']['price'] . ', ' . $counting_sell['market_discovery']['confidence_interval']['price_max'] . ', ' . $counting_sell['market_discovery']['confidence_interval']['price_min'] . PHP_EOL;
                                     } else
                                         echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Can not create order!!!' . PHP_EOL;
-                                } else
-                                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Can not create order, because not enough min deal amount' . PHP_EOL;
+                                }
                             } else
                                 echo '[' . date('Y-m-d H:i:s') . '] [WARNING] May be not enough balance' . PHP_EOL;
                         }
@@ -217,8 +216,7 @@ while (true) {
                                         echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order range: ' . $counting_buy['exchange']['price'] . ', ' . $counting_buy['market_discovery']['confidence_interval']['price_max'] . ', ' . $counting_buy['market_discovery']['confidence_interval']['price_min'] . PHP_EOL;
                                     } else
                                         echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Can not create order!!!' . PHP_EOL;
-                                } else
-                                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Can not create order, because not enough min deal amount' . PHP_EOL;
+                                }
                             } else
                                 echo '[' . date('Y-m-d H:i:s') . '] [WARNING] May be not enough balance' . PHP_EOL;
                         }

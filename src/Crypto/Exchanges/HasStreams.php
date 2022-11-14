@@ -6,7 +6,6 @@ use Exception;
 
 trait HasStreams
 {
-
     /**
      * @throws Exception
      */

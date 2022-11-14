@@ -81,21 +81,27 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
                 );
                 // PRE COUNT
 
+                echo '[' . date('Y-m-d H:i:s') . '] [START] --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------' . PHP_EOL;
                 // DECISION BY CREATE ORDER
                 if ($amount * $price > $min_deal_amount) {
-                    $order = $ccxt_market_discovery->createOrder($symbol, $type, $side, $amount);
-
-                    $memcached_mirror_trades_info['data']['leftovers'][$symbol][$side] = 0;
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Create mirror order: ' . $order['symbol'] . ', ' . $order['type'] . ', ' . $order['side'] . ', ' . $order['price'] . ', ' . $order['amount'] . PHP_EOL;
+                    if ($order = $ccxt_market_discovery->createOrder($symbol, $type, $side, $amount)) {
+                        $memcached_mirror_trades_info['data']['leftovers'][$symbol][$side] = 0;
+                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Create mirror order: ' . $order['symbol'] . ', ' . $order['type'] . ', ' . $order['side'] . ', ' . $order['price'] . ', ' . $order['amount'] . PHP_EOL;
+                    } else {
+                        $memcached_mirror_trades_info['data']['leftovers'][$symbol][$side] += $data['data']['amount'];
+                        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Mirror trade is empty' . PHP_EOL;
+                        Log::warning(['$order' => $order, 'message' => 'Mirror trade is null', 'file' => __FILE__]);
+                    }
                 } else {
                     $memcached_mirror_trades_info['data']['leftovers'][$symbol][$side] += $data['data']['amount'];
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Less amount: ' . $symbol . ', ' . $type . ', ' . $side . ', ' . $price . ', ' . $amount . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Less amount: ' . $symbol . ', ' . $type . ', ' . $side . PHP_EOL;
                 }
                 // DECISION BY CREATE ORDER
 
                 // END COUNTING
                 $memcached->set($memcached_key, $memcached_mirror_trades_info['data']);
                 echo '[' . date('Y-m-d H:i:s') . '] [INFO] Trade was: ' . $symbol . ', ' . $data['data']['trade_type'] . ', ' . $data['data']['side'] . ', ' . $price . ', ' . $data['data']['amount'] . PHP_EOL;
+                echo '[' . date('Y-m-d H:i:s') . '] [END] --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------' . PHP_EOL;
                 // END COUNTING
             } elseif ($data['response'] == 'isConnectionEstablished') {
                 echo '[' . date('Y-m-d H:i:s') . '] [INFO] Connection is established with session id: ' . $data['data']['session_id'] . PHP_EOL;

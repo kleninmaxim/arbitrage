@@ -5,7 +5,6 @@ namespace Src\Support;
 class Time
 {
     private static array $start = [];
-    private static float|null $update = null;
 
     public static function up(float $seconds, string $prefix, bool $first = false): bool
     {
@@ -31,22 +30,19 @@ class Time
     public static function reset(): void
     {
         self::$start = [];
-        self::$update = null;
     }
 
-    public static function update(float|null $update = null): void
+    public static function update(array $except = []): void
     {
         $now = microtime(true);
 
-        if ($update && empty(self::$update))
-            self::$update = $now + $update;
+        foreach (self::$start as $pr => $item)
+            if ($now >= $item && !in_array($pr, $except))
+                unset(self::$start[$pr]);
+    }
 
-        if (empty(self::$update) || $now > self::$update) {
-            foreach (self::$start as $pr => $item)
-                if ($now >= $item)
-                    unset(self::$start[$pr]);
-
-            self::$update = null;
-        }
+    public static function get(): array
+    {
+        return self::$start;
     }
 }

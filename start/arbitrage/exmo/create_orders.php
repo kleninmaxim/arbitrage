@@ -41,6 +41,8 @@ $ccxt_exchange = Ccxt::init($exchange, api_key: $api_keys_exchange['api_public']
 $ccxt_market_discovery = Ccxt::init($market_discovery, api_key: $api_keys_market_discovery['api_public'], api_secret: $api_keys_market_discovery['api_private']);
 
 while (true) {
+    usleep(1000);
+
     if ($data = $memcached->get($keys)) {
         list($orderbooks, $account_info) = formatMemcachedData($data);
 
@@ -48,8 +50,10 @@ while (true) {
 
         if (count($open_orders) > 1) {
             foreach ($open_orders as $open_order) {
-                $ccxt_exchange->cancelOrder($open_order['id'], $open_order['symbol']);
-                echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Cancel order before counting because open orders more than one: ' . $open_order['id'] . PHP_EOL;
+                if (Time::up(1, $open_order['id'], true)) {
+                    $ccxt_exchange->cancelOrder($open_order['id'], $open_order['symbol']);
+                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Cancel order before counting because open orders more than one: ' . $open_order['id'] . PHP_EOL;
+                }
             }
             unset($limit_exchange_sell_order);
         } else {
@@ -60,8 +64,10 @@ while (true) {
                         !($imitation_market_order = imitationMarketOrderBuy($orderbooks[$market_discovery][$symbol], $limit_exchange_sell_order['counting']['market_discovery']['amount']['dirty'], $price_increment)) ||
                         !isOrderInRange($limit_exchange_sell_order, $imitation_market_order)
                     ) {
-                        $ccxt_exchange->cancelOrder($limit_exchange_sell_order['info']['id'], $symbol);
-                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_sell_order['info']['id'] . PHP_EOL;
+                        if (Time::up(1, $limit_exchange_sell_order['info']['id'], true)) {
+                            $ccxt_exchange->cancelOrder($limit_exchange_sell_order['info']['id'], $symbol);
+                            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_sell_order['info']['id'] . PHP_EOL;
+                        }
                         unset($limit_exchange_sell_order);
                     }
                 } elseif ((microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > 3)
@@ -69,8 +75,10 @@ while (true) {
             } elseif (Time::up(1, 'create_order')) {
                 if (count($open_orders) > 0) {
                     foreach ($open_orders as $open_order) {
-                        $ccxt_exchange->cancelOrder($open_order['id'], $open_order['symbol']);
-                        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Cancel order before proofOrderbooks because open orders more than one: ' . $open_order['id'] . PHP_EOL;
+                        if (Time::up(1, $open_order['id'], true)) {
+                            $ccxt_exchange->cancelOrder($open_order['id'], $open_order['symbol']);
+                            echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Cancel order before proofOrderbooks because open orders more than one: ' . $open_order['id'] . PHP_EOL;
+                        }
                     }
                 } else {
                     if (proofOrderbooks($orderbooks, $use_markets)) {
@@ -141,8 +149,10 @@ while (true) {
 
         if (count($open_orders) > 1) {
             foreach ($open_orders as $open_order) {
-                $ccxt_exchange->cancelOrder($open_order['id'], $open_order['symbol']);
-                echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Cancel order before counting because open orders more than one: ' . $open_order['id'] . PHP_EOL;
+                if (Time::up(1, $open_order['id'], true)) {
+                    $ccxt_exchange->cancelOrder($open_order['id'], $open_order['symbol']);
+                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Cancel order before counting because open orders more than one: ' . $open_order['id'] . PHP_EOL;
+                }
             }
             unset($limit_exchange_buy_order);
         } else {
@@ -153,8 +163,10 @@ while (true) {
                         !($imitation_market_order = imitationMarketOrderSell($orderbooks[$market_discovery][$symbol], $limit_exchange_buy_order['counting']['market_discovery']['quote']['dirty'])) ||
                         !isOrderInRange($limit_exchange_buy_order, $imitation_market_order)
                     ) {
-                        $ccxt_exchange->cancelOrder($limit_exchange_buy_order['info']['id'], $symbol);
-                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_buy_order['info']['id'] . PHP_EOL;
+                        if (Time::up(1, $limit_exchange_buy_order['info']['id'], true)) {
+                            $ccxt_exchange->cancelOrder($limit_exchange_buy_order['info']['id'], $symbol);
+                            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_buy_order['info']['id'] . PHP_EOL;
+                        }
                         unset($limit_exchange_buy_order);
                     }
                 } elseif ((microtime(true) - $limit_exchange_buy_order['info']['timestamp']) > 3)
@@ -162,8 +174,10 @@ while (true) {
             } elseif (Time::up(1, 'create_order')) {
                 if (count($open_orders) > 0) {
                     foreach ($open_orders as $open_order) {
-                        $ccxt_exchange->cancelOrder($open_order['id'], $open_order['symbol']);
-                        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Cancel order before proofOrderbooks because open orders more than one: ' . $open_order['id'] . PHP_EOL;
+                        if (Time::up(1, $open_order['id'], true)) {
+                            $ccxt_exchange->cancelOrder($open_order['id'], $open_order['symbol']);
+                            echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Cancel order before proofOrderbooks because open orders more than one: ' . $open_order['id'] . PHP_EOL;
+                        }
                     }
                 } else {
                     if (proofOrderbooks($orderbooks, $use_markets)) {
@@ -226,6 +240,9 @@ while (true) {
         }
     } else
         echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Memcached data is false!!!' . PHP_EOL;
+
+    // VERY IMPORTANT RESET UNUSED TIME PREFIX AND GIVE LIST USED PREFIX
+    Time::update(['create_order']);
 }
 
 function isOrderInRange($limit_exchange_order, $imitation_market_order): bool

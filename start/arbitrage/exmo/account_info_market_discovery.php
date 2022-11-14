@@ -55,7 +55,7 @@ if ($exchange->has['watchBalance']) {
                 $memcached->set($memcached_key, $account_info['data']);
                 // END COUNTING;
             } catch (Exception $e) {
-                echo get_class($e), ' ', $e->getMessage(), "\n";
+                echo '[' . date('Y-m-d H:i:s') . '] ' . $e->getMessage() . PHP_EOL;
                 Log::error($e, 'Unexpected error');
             }
         }

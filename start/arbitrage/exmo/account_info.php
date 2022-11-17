@@ -90,6 +90,9 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
                     // END COUNTING
 
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order update: ' . $order['id'] . ', ' . $order['symbol'] . ', ' . $order['side'] . ', ' . $order['price'] . ', ' . $order['amount'] . ', ' . $order['status'] . PHP_EOL;
+
+                    $order['exchange'] = $exchange;
+                    $redis->queue('orders', $order);
                 }
             } elseif ($data['response'] == 'isConnectionEstablished') {
                 echo '[' . date('Y-m-d H:i:s') . '] [INFO] Connection is established with session id: ' . $data['data']['session_id'] . PHP_EOL;

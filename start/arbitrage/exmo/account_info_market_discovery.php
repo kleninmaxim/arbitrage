@@ -65,5 +65,3 @@ if ($exchange->has['watchBalance']) {
         }
     });
 }
-
-

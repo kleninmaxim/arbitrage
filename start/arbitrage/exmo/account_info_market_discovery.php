@@ -30,13 +30,16 @@ if ($exchange->has['watchBalance']) {
 
         // COUNT NECESSARY INFO
         $memcached = \Src\Databases\Memcached::init();
+        $redis = \Src\Databases\Redis::init();
         $memcached_key = 'accountInfo_' . $market_discovery;
         $balances = $ccxt_market_discovery->getBalances($assets);
         $memcached->set($memcached_key, ['balances' => $balances]);
         // COUNT NECESSARY INFO
 
-        foreach ($balances as $asset => $balance)
+        foreach ($balances as $asset => $balance) {
             echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balance update: ' . $asset . ', free: ' . $balance['free'] . ', used: ' . $balance['used'] . ', total: ' . $balance['total'] . PHP_EOL;
+            $redis->queue('balances', ['exchange' => $exchange->id, 'asset' => $asset, 'balance' => $balance]);
+        }
 
         while (true) {
             try {
@@ -45,10 +48,11 @@ if ($exchange->has['watchBalance']) {
                 // PRE COUNT
 
                 $balance = yield $exchange->watch_balance();
-                foreach ($balance as $key => $item)
-                    if (in_array($key, $assets)) {
-                        $account_info['data']['balances'][$key] = $item;
-                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balance update: ' . $key . ', free: ' . $item['free'] . ', used: ' . $item['used'] . ', total: ' . $item['total'] . PHP_EOL;
+                foreach ($balance as $asset => $item)
+                    if (in_array($asset, $assets)) {
+                        $account_info['data']['balances'][$asset] = $item;
+                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balance update: ' . $asset . ', free: ' . $item['free'] . ', used: ' . $item['used'] . ', total: ' . $item['total'] . PHP_EOL;
+                        $redis->queue('balances', ['exchange' => $exchange->id, 'asset' => $asset, 'balance' => $balance]);
                     }
 
                 // END COUNTING

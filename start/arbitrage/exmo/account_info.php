@@ -29,6 +29,7 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
 
     // COUNT NECESSARY INFO
     $memcached = \Src\Databases\Memcached::init();
+    $redis = \Src\Databases\Redis::init();
     $markets = originCcxtMarketIds($ccxt_exchange->getMarkets($assets), $use_markets);
     // COUNT NECESSARY INFO
 
@@ -52,7 +53,7 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
     ]));
     // LOGIN AND SUBSCRIBE
 
-    $conn->on('message', function ($msg) use ($memcached, $exchange, $markets, $assets) {
+    $conn->on('message', function ($msg) use ($memcached, $redis, $exchange, $markets, $assets) {
         if ($msg !== null) {
             $data = processWebsocketData(json_decode($msg, true), ['markets' => $markets, 'assets' => $assets]);
 
@@ -65,6 +66,7 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
                 foreach ($data['data'] as $asset => $balance) {
                     $account_info['data']['balances'][$asset] = $balance;
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balance update: ' . $asset . ', free: ' . $balance['free'] . ', used: ' . $balance['used'] . ', total: ' . $balance['total'] . PHP_EOL;
+                    $redis->queue('balances', ['exchange' => $exchange, 'asset' => $asset, 'balance' => $balance]);
                 }
 
                 // END COUNTING

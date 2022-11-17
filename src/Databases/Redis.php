@@ -59,4 +59,15 @@ class Redis
 
         return null;
     }
+
+    public function flushAll(): bool|\Redis|null
+    {
+        try {
+            return $this->redis->flushAll();
+        } catch (RedisException $e) {
+            Log::error($e, ['$queueName' => $queueName]);
+        }
+
+        return null;
+    }
 }

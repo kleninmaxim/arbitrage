@@ -20,8 +20,8 @@ trait Trades
         string $datetime
     ): static
     {
-        return $this->replace(
-            'balances',
+        return $this->insert(
+            'trades',
             [
                 'exchange_id' => $this->getParentId('exchanges', 'exchange', $exchange),
                 'trade_id' => $trade_id,

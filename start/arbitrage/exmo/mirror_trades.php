@@ -143,6 +143,6 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
     $conn->on('close', function($code = null, $reason = null) {
         echo '[' . date('Y-m-d H:i:s') . '] Connection closed. Code: ' . $code . '; Reason: ' . $reason . PHP_EOL;
     });
-}, function (\Exception $e) {
+}, function (Exception $e) {
     echo "Could not connect: {$e->getMessage()}" . PHP_EOL;
 });

@@ -60,13 +60,13 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
             if ($data['response'] == 'isUpdateOrSnapshotSpotUserWallet') {
                 // PRE COUNT
                 $memcached_key = 'accountInfo_' . $exchange;
-                $account_info = $memcached->get($memcached_key) ?? ['data' => ['balances' => []]];
+                $account_info = $memcached->get($memcached_key) ?: ['data' => ['balances' => []]];
                 // PRE COUNT
 
                 foreach ($data['data'] as $asset => $balance) {
                     $account_info['data']['balances'][$asset] = $balance;
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balance update: ' . $asset . ', free: ' . $balance['free'] . ', used: ' . $balance['used'] . ', total: ' . $balance['total'] . PHP_EOL;
-                    $redis->queue('balances', ['exchange' => $exchange, 'asset' => $asset, 'balance' => $balance]);
+                    $redis->queue('exmo_balances', ['exchange' => $exchange, 'asset' => $asset, 'balance' => $balance]);
                 }
 
                 // END COUNTING
@@ -76,7 +76,7 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
                 if ($order = $data['data']) {
                     // PRE COUNT
                     $memcached_key = 'accountInfo_' . $exchange;
-                    $account_info = $memcached->get($memcached_key) ?? ['data' => ['open_orders' => []]];
+                    $account_info = $memcached->get($memcached_key) ?: ['data' => ['open_orders' => []]];
                     // PRE COUNT
 
                     if ($order['status'] == 'open') {
@@ -92,7 +92,7 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order update: ' . $order['id'] . ', ' . $order['symbol'] . ', ' . $order['side'] . ', ' . $order['price'] . ', ' . $order['amount'] . ', ' . $order['status'] . PHP_EOL;
 
                     $order['exchange'] = $exchange;
-                    $redis->queue('orders', $order);
+                    $redis->queue('exmo_orders', $order);
                 }
             } elseif ($data['response'] == 'isConnectionEstablished') {
                 echo '[' . date('Y-m-d H:i:s') . '] [INFO] Connection is established with session id: ' . $data['data']['session_id'] . PHP_EOL;

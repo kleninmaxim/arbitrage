@@ -31,9 +31,18 @@ CREATE TABLE `balances` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY `fk_balances_asset_exchange` (`asset`,`exchange_id`),
   KEY `fk_balances_exchanges` (`exchange_id`),
-  CONSTRAINT `fk_balances_exchanges` FOREIGN KEY (`exchange_id`) REFERENCES `exchanges` (`id`)
+  CONSTRAINT `fk_balances_exchanges` FOREIGN KEY (`exchange_id`) REFERENCES `exchanges` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `balances`
+--
+
+LOCK TABLES `balances` WRITE;
+/*!40000 ALTER TABLE `balances` DISABLE KEYS */;
+/*!40000 ALTER TABLE `balances` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `exchanges`
@@ -51,6 +60,16 @@ CREATE TABLE `exchanges` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Dumping data for table `exchanges`
+--
+
+LOCK TABLES `exchanges` WRITE;
+/*!40000 ALTER TABLE `exchanges` DISABLE KEYS */;
+INSERT INTO `exchanges` VALUES (1,'binance'),(2,'exmo');
+/*!40000 ALTER TABLE `exchanges` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `mirror_trades`
 --
 
@@ -62,10 +81,19 @@ CREATE TABLE `mirror_trades` (
   `order_id` int unsigned NOT NULL,
   UNIQUE KEY `fx_mirror_trades_order_id_trade_id` (`trade_id`,`order_id`),
   KEY `fx_mirror_trades_order_id_idx` (`order_id`),
-  CONSTRAINT `fx_mirror_trades_order_id` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`),
+  CONSTRAINT `fx_mirror_trades_order_id` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fx_mirror_trades_trade_id` FOREIGN KEY (`trade_id`) REFERENCES `trades` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `mirror_trades`
+--
+
+LOCK TABLES `mirror_trades` WRITE;
+/*!40000 ALTER TABLE `mirror_trades` DISABLE KEYS */;
+/*!40000 ALTER TABLE `mirror_trades` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `orders`
@@ -91,9 +119,18 @@ CREATE TABLE `orders` (
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `fx_orders_order_id_exchange_id` (`order_id`,`exchange_id`),
   KEY `fx_orders_exchanges_idx` (`exchange_id`),
-  CONSTRAINT `fx_orders_exchanges` FOREIGN KEY (`exchange_id`) REFERENCES `exchanges` (`id`)
+  CONSTRAINT `fx_orders_exchanges` FOREIGN KEY (`exchange_id`) REFERENCES `exchanges` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `orders`
+--
+
+LOCK TABLES `orders` WRITE;
+/*!40000 ALTER TABLE `orders` DISABLE KEYS */;
+/*!40000 ALTER TABLE `orders` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `trades`
@@ -104,6 +141,7 @@ DROP TABLE IF EXISTS `trades`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `trades` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `exchange_id` int unsigned NOT NULL,
   `trade_id` int NOT NULL,
   `order_id` int NOT NULL,
   `symbol` varchar(31) NOT NULL,
@@ -117,10 +155,21 @@ CREATE TABLE `trades` (
   `timestamp` decimal(25,8) NOT NULL,
   `datetime` timestamp NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `fx_trades_trade_id_order_id` (`trade_id`,`order_id`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  UNIQUE KEY `fx_trades_trade_id_order_id` (`trade_id`,`order_id`,`exchange_id`),
+  KEY `fx_trades_exchanges_idx` (`exchange_id`),
+  CONSTRAINT `fx_trades_exchanges` FOREIGN KEY (`exchange_id`) REFERENCES `exchanges` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `trades`
+--
+
+LOCK TABLES `trades` WRITE;
+/*!40000 ALTER TABLE `trades` DISABLE KEYS */;
+/*!40000 ALTER TABLE `trades` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Dumping events for database 'mt'
@@ -139,4 +188,4 @@ CREATE TABLE `trades` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-11-17 10:00:57
+-- Dump completed on 2022-11-17 20:03:25

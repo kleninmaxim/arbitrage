@@ -38,13 +38,13 @@ if ($exchange->has['watchBalance']) {
 
         foreach ($balances as $asset => $balance) {
             echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balance update: ' . $asset . ', free: ' . $balance['free'] . ', used: ' . $balance['used'] . ', total: ' . $balance['total'] . PHP_EOL;
-            $redis->queue('balances', ['exchange' => $exchange->id, 'asset' => $asset, 'balance' => $balance]);
+            $redis->queue('exmo_balances', ['exchange' => $exchange->id, 'asset' => $asset, 'balance' => $balance]);
         }
 
         while (true) {
             try {
                 // PRE COUNT
-                $account_info = $memcached->get($memcached_key) ?? ['data' => ['balances' => []]];
+                $account_info = $memcached->get($memcached_key) ?: ['data' => ['balances' => []]];
                 // PRE COUNT
 
                 $balance = yield $exchange->watch_balance();
@@ -52,7 +52,7 @@ if ($exchange->has['watchBalance']) {
                     if (in_array($asset, $assets)) {
                         $account_info['data']['balances'][$asset] = $item;
                         echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balance update: ' . $asset . ', free: ' . $item['free'] . ', used: ' . $item['used'] . ', total: ' . $item['total'] . PHP_EOL;
-                        $redis->queue('balances', ['exchange' => $exchange->id, 'asset' => $asset, 'balance' => $balance]);
+                        $redis->queue('exmo_balances', ['exchange' => $exchange->id, 'asset' => $asset, 'balance' => $item]);
                     }
 
                 // END COUNTING

@@ -68,7 +68,7 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
                 // PRE COUNT
                 // FORM MEMCACHED MIRROR TRADE INFO
                 $memcached_key = 'mirrorTrades_' . $exchange;
-                $memcached_mirror_trades_info = $memcached->get($memcached_key) ?? ['data' => ['leftovers' => []], 'timestamp' => microtime(true)];
+                $memcached_mirror_trades_info = $memcached->get($memcached_key) ?: ['data' => ['leftovers' => []], 'timestamp' => microtime(true)];
                 if (!empty($memcached_mirror_trades_info['timestamp']) && (microtime(true) - $memcached_mirror_trades_info['timestamp'] > 86400))
                     unset($memcached_mirror_trades_info);
 
@@ -90,7 +90,7 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
                     if ($order = $ccxt_market_discovery->createOrder($symbol, $type, $side, $amount)) {
                         $memcached_mirror_trades_info['data']['leftovers'][$symbol][$side] = 0;
                         echo '[' . date('Y-m-d H:i:s') . '] [INFO] Create mirror order: ' . $order['symbol'] . ', ' . $order['type'] . ', ' . $order['side'] . ', ' . $order['price'] . ', ' . $order['amount'] . PHP_EOL;
-                        $redis->queue('mirror_order_and_trade', [
+                        $redis->queue('exmo_mirror_order_and_trade', [
                             'trade' => $data['data'],
                             'order' => [
                                 'exchange' => $ccxt_market_discovery->name,
@@ -110,12 +110,12 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
                         $memcached_mirror_trades_info['data']['leftovers'][$symbol][$side] += $data['data']['amount'];
                         echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Mirror trade is empty' . PHP_EOL;
                         Log::warning(['$order' => $order, 'message' => 'Mirror trade is null', 'file' => __FILE__]);
-                        $redis->queue('mirror_order_and_trade', ['trade' => $data['data'], 'order' => []]);
+                        $redis->queue('exmo_mirror_order_and_trade', ['trade' => $data['data'], 'order' => []]);
                     }
                 } else {
                     $memcached_mirror_trades_info['data']['leftovers'][$symbol][$side] += $data['data']['amount'];
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Less amount: ' . $symbol . ', ' . $type . ', ' . $side . PHP_EOL;
-                    $redis->queue('mirror_order_and_trade', ['trade' => $data['data'], 'order' => []]);
+                    $redis->queue('exmo_mirror_order_and_trade', ['trade' => $data['data'], 'order' => []]);
                 }
                 // DECISION BY CREATE ORDER
 

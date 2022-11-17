@@ -30,7 +30,7 @@ while (true) {
             $order['timestamp'],
             $order['datetime'],
         )->execute();
-        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order update: ' . $balances['exchange'] . ', ' . $order['id'] . ', ' . $order['symbol'] . ', ' . $order['side'] . ', ' . $order['price'] . ', ' . $order['amount'] . ', ' . $order['status'] . PHP_EOL;
+        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order update: ' . $order['exchange'] . ', ' . $order['id'] . ', ' . $order['symbol'] . ', ' . $order['side'] . ', ' . $order['price'] . ', ' . $order['amount'] . ', ' . $order['status'] . PHP_EOL;
     }
 
     if ($mirror_order_and_trade = $redis->get('exmo_mirror_order_and_trade')) {

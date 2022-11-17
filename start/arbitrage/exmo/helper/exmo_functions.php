@@ -99,7 +99,7 @@ function isUpdateOrSnapshotOrders($data, $markets): array
                 'data' => [
                     'id' => $data['data']['order_id'],
                     'symbol' => $markets['origin'][$data['data']['pair']],
-                    'side' => $data['data']['type'],
+                    'side' => str_contains($data['data']['type'], 'sell') ? 'sell' : 'buy',
                     'price' => $data['data']['price'],
                     'amount' => $data['data']['original_quantity'],
                     'quote' => $data['data']['original_amount'],

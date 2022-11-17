@@ -58,7 +58,7 @@ class Log
         $errors = implode(
             "\n",
             array_map(
-                fn($trace) => str_replace(self::$current_project_path, '.', $trace['file'] ?? 'no_file') . ' ' . ($trace['line'] ?? 'no_line') . ' ' . ($trace['class'] ?? 'no_class') . ($trace['type'] ?? 'no_type') . ($trace['function'] ?? 'no_function'),
+                fn($trace) => str_replace(self::$current_project_path, '.', ($trace['file'] ?? 'no_file')) . ' ' . ($trace['line'] ?? 'no_line') . ' ' . ($trace['class'] ?? 'no_class') . ($trace['type'] ?? 'no_type') . ($trace['function'] ?? 'no_function'),
                 $e->getTrace()
             )
         );

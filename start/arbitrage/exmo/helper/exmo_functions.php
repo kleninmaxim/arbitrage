@@ -101,9 +101,10 @@ function isUpdateOrSnapshotOrders($data, $markets): array
                     'symbol' => $markets['origin'][$data['data']['pair']],
                     'side' => $data['data']['type'],
                     'price' => $data['data']['price'],
-                    'amount' => $data['data']['quantity'],
-                    'quote' => $data['data']['amount'],
+                    'amount' => $data['data']['original_quantity'],
+                    'quote' => $data['data']['original_amount'],
                     'status' => $data['data']['status'],
+                    'filled' => round($data['data']['original_quantity'] - $data['data']['quantity'], 8),
                     'timestamp' => $timestamp_in_seconds,
                     'datetime' => date('Y--m-d H:i:s', $timestamp_in_seconds)
                 ]
@@ -132,12 +133,12 @@ function isUpdateSpotUserTrades($data, $markets): array
                 'trade_id' => $data['data']['trade_id'],
                 'order_id' => $data['data']['order_id'],
                 'symbol' => $markets['origin'][$data['data']['pair']],
+                'trade_type' => $data['data']['exec_type'],
                 'side' => $data['data']['type'],
                 'price' => $data['data']['price'],
                 'amount' => $data['data']['quantity'],
                 'quote' => $data['data']['amount'],
                 'timestamp' => $timestamp_in_seconds,
-                'trade_type' => $data['data']['exec_type'],
                 'datetime' => date('Y--m-d H:i:s', $timestamp_in_seconds),
                 'fee' => [
                     'amount' => $data['data']['commission_amount'],

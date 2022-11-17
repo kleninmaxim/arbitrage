@@ -33,6 +33,7 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
 
     // COUNT NECESSARY INFO
     $memcached = \Src\Databases\Memcached::init();
+    $redis = \Src\Databases\Redis::init();
     $markets = originCcxtMarketIds($ccxt_exchange->getMarkets($assets), $use_markets);
     // COUNT NECESSARY INFO
 
@@ -52,7 +53,7 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
     ]));
     // LOGIN AND SUBSCRIBE
 
-    $conn->on('message', function ($msg) use ($memcached, $ccxt_market_discovery, $exchange, $min_deal_amount, $markets, $info_of_markets) {
+    $conn->on('message', function ($msg) use ($memcached, $redis, $ccxt_market_discovery, $exchange, $min_deal_amount, $markets, $info_of_markets) {
         if ($msg !== null) {
             $data = processWebsocketData(json_decode($msg, true), ['markets' => $markets]);
 
@@ -83,18 +84,38 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
 
                 echo '[' . date('Y-m-d H:i:s') . '] [START] --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------' . PHP_EOL;
                 // DECISION BY CREATE ORDER
+                $data['data']['exchange'] = $exchange;
+
                 if ($amount * $price > $min_deal_amount) {
                     if ($order = $ccxt_market_discovery->createOrder($symbol, $type, $side, $amount)) {
                         $memcached_mirror_trades_info['data']['leftovers'][$symbol][$side] = 0;
                         echo '[' . date('Y-m-d H:i:s') . '] [INFO] Create mirror order: ' . $order['symbol'] . ', ' . $order['type'] . ', ' . $order['side'] . ', ' . $order['price'] . ', ' . $order['amount'] . PHP_EOL;
+                        $redis->queue('mirror_order_and_trade', [
+                            'trade' => $data['data'],
+                            'order' => [
+                                'exchange' => $ccxt_market_discovery->name,
+                                'id' => $order['id'],
+                                'symbol' => $order['symbol'],
+                                'side' => $order['side'],
+                                'price' => $order['price'],
+                                'amount' => $order['amount'],
+                                'quote' => $order['cost'],
+                                'status' => $order['status'],
+                                'filled' => $order['filled'],
+                                'timestamp' => $order['timestamp'] / 1000,
+                                'datetime' => date('Y-m-d H:i:s', round($order['timestamp'] / 1000))
+                            ]
+                        ]);
                     } else {
                         $memcached_mirror_trades_info['data']['leftovers'][$symbol][$side] += $data['data']['amount'];
                         echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Mirror trade is empty' . PHP_EOL;
                         Log::warning(['$order' => $order, 'message' => 'Mirror trade is null', 'file' => __FILE__]);
+                        $redis->queue('mirror_order_and_trade', ['trade' => $data['data'], 'order' => []]);
                     }
                 } else {
                     $memcached_mirror_trades_info['data']['leftovers'][$symbol][$side] += $data['data']['amount'];
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Less amount: ' . $symbol . ', ' . $type . ', ' . $side . PHP_EOL;
+                    $redis->queue('mirror_order_and_trade', ['trade' => $data['data'], 'order' => []]);
                 }
                 // DECISION BY CREATE ORDER
 

@@ -16,6 +16,4 @@ const LOGS = __DIR__ . '/storage/logs/';
 Config::initPath(CONFIG);
 Log::initPath(LOGS);
 
-error_reporting(-1);
-
 date_default_timezone_set(Config::config('app', 'timezone'));

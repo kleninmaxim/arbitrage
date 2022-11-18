@@ -107,7 +107,7 @@ while (true) {
                                 $price_increment
                             );
 
-                            if ($counting_sell && $orderbooks[$exchange][$symbol]['bids'][0][0] > $counting_sell['exchange']['price']) {
+                            if ($counting_sell && $orderbooks[$exchange][$symbol]['bids'][0][0] > $counting_sell['exchange']['price'])
                                 $counting_sell = exchangeSellMarketDiscoveryBuy(
                                     $orderbooks[$market_discovery][$symbol],
                                     Math::incrementNumber($positions[$symbol]['sell']['base_asset'] * 0.99, $amount_increment),
@@ -117,8 +117,6 @@ while (true) {
                                     $amount_increment,
                                     $price_increment
                                 );
-                            } else
-                                echo '[' . date('Y-m-d H:i:s') . '] [WARNING] May be not enough balance' . PHP_EOL;
 
                             if ($counting_sell && $counting_sell['market_discovery']['confidence_interval']['price_max'] < $positions[$symbol]['sell']['price']) {
                                 if ($counting_sell['exchange']['amount'] * $counting_sell['exchange']['price'] > $min_deal_amount) {
@@ -213,7 +211,7 @@ while (true) {
                                 $price_increment
                             );
 
-                            if ($counting_buy && $orderbooks[$exchange][$symbol]['asks'][0][0] < $counting_buy['exchange']['price']) {
+                            if ($counting_buy && $orderbooks[$exchange][$symbol]['asks'][0][0] < $counting_buy['exchange']['price'])
                                 $counting_buy = exchangeBuyMarketDiscoverySell(
                                     $orderbooks[$market_discovery][$symbol],
                                     $positions[$symbol]['buy']['quote_asset'] * 0.99,
@@ -223,8 +221,6 @@ while (true) {
                                     $amount_increment,
                                     $price_increment
                                 );
-                            } else
-                                echo '[' . date('Y-m-d H:i:s') . '] [WARNING] May be not enough balance' . PHP_EOL;
 
                             if ($counting_buy && $counting_buy['market_discovery']['confidence_interval']['price_min'] > $positions[$symbol]['buy']['price']) {
                                 if ($counting_buy['exchange']['quote'] > $min_deal_amount) {

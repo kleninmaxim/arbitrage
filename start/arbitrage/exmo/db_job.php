@@ -2,6 +2,7 @@
 
 use Src\Databases\MySql;
 use Src\Support\Config;
+use Src\Support\Time;
 
 require_once dirname(__DIR__, 3) . '/index.php';
 
@@ -79,6 +80,9 @@ while (true) {
             echo '[' . date('Y-m-d H:i:s') . '] [INFO] Less amount: ' . $trade['symbol'] . ', ' . $trade['trade_id'] . ', ' . $trade['order_id'] . ', ' . $trade['side'] . ', ' . $trade['price'] . ', ' . $trade['amount'] . ', ' . $trade['quote'] . ', ' . $trade['datetime'] . PHP_EOL;
         }
     }
+
+    if (Time::up(60, 'db_job_len', true))
+        echo '[' . date('Y-m-d H:i:s') . '] exmo_balances: ' . $redis->getLen('exmo_balances') . ', exmo_orders: ' . $redis->getLen('exmo_orders') . ', exmo_mirror_order_and_trade: ' . $redis->getLen('exmo_mirror_order_and_trade') . PHP_EOL;
 }
 
 /*

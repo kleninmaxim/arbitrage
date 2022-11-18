@@ -30,7 +30,7 @@ $info_of_markets = $config['info_of_markets'];
 
 $price_increment = $info_of_markets[$symbol]['price_increment'];
 $amount_increment = $info_of_markets[$symbol]['amount_increment'];
-$keys = getMemcachedKeys([$exchange, $market_discovery], $use_markets);
+$keys = getMemcachedKeys([$exchange, $market_discovery], $use_markets, $exchange);
 
 $memcached = \Src\Databases\Memcached::init();
 
@@ -44,7 +44,7 @@ while (true) {
     usleep(1000);
 
     if ($data = $memcached->get($keys)) {
-        list($orderbooks, $account_info) = formatMemcachedData($data);
+        list($orderbooks, $account_info, $mirror_trades_info) = formatMemcachedData($data);
 
         $open_orders = array_filter($account_info[$exchange]['open_orders'], fn($open_order) => $open_order['symbol'] == $symbol && $open_order['side'] == 'sell');
 
@@ -72,7 +72,7 @@ while (true) {
                     }
                 } elseif ((microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > 3)
                     unset($limit_exchange_sell_order);
-            } elseif (Time::up(1, 'create_order')) {
+            } elseif (Time::up(0.5, 'create_order')) {
                 if (count($open_orders) > 0) {
                     foreach ($open_orders as $open_order) {
                         if (Time::up(1, $open_order['id'], true)) {
@@ -85,11 +85,16 @@ while (true) {
                         $balances[$market_discovery] = $account_info[$market_discovery]['balances'];
                         $balances[$exchange] = $account_info[$exchange]['balances'];
 
-                        reduceBalances($balances[$market_discovery]);
-                        reduceBalances($balances[$exchange]);
-
                         if (!empty($balances[$exchange]) && !empty($balances[$market_discovery])) {
                             $prices = getPrices($orderbooks, $market_discovery, $price_margin);
+
+                            reduceBalances($balances[$market_discovery]);
+                            reduceBalances($balances[$exchange]);
+                            if (!empty($mirror_trades_info[$symbol]['buy'])) {
+                                $balances[$market_discovery][$quote_asset]['free'] -= $mirror_trades_info[$symbol]['buy'] * $prices[$symbol]['sell'];
+                                $balances[$market_discovery][$quote_asset]['total'] -= $mirror_trades_info[$symbol]['buy'] * $prices[$symbol]['sell'];
+                            }
+
                             $positions = getPositions($balances, $prices, $exchange, $market_discovery, $quote_asset, $use_markets);
 
                             $counting_sell = exchangeSellMarketDiscoveryBuy(
@@ -120,13 +125,13 @@ while (true) {
                                             $symbol,
                                             'limit',
                                             $counting_sell['exchange']['side'],
-                                            $counting_sell['exchange']['amount'],
+                                            Math::incrementNumber($counting_sell['exchange']['amount'], $amount_increment),
                                             $counting_sell['exchange']['price']
                                         )
                                     ) {
                                         $limit_exchange_sell_order = ['counting' => $counting_sell, 'info' => ['id' => $create_order['id'], 'filled' => 0, 'timestamp' => microtime(true)]];
 
-                                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order created: ' . $create_order['id'] . ' limit ' . $counting_sell['exchange']['side'] . ' ' . $counting_sell['exchange']['amount'] . ' ' . $counting_sell['exchange']['price'] . PHP_EOL;
+                                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order created: ' . $create_order['id'] . ' limit ' . $counting_sell['exchange']['side'] . ' ' . Math::incrementNumber($counting_sell['exchange']['amount'], $amount_increment) . ' ' . $counting_sell['exchange']['price'] . PHP_EOL;
                                         echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order range: ' . $counting_sell['exchange']['price'] . ', ' . $counting_sell['market_discovery']['confidence_interval']['price_max'] . ', ' . $counting_sell['market_discovery']['confidence_interval']['price_min'] . PHP_EOL;
                                     } else
                                         echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Can not create order!!!' . PHP_EOL;
@@ -171,7 +176,7 @@ while (true) {
                     }
                 } elseif ((microtime(true) - $limit_exchange_buy_order['info']['timestamp']) > 3)
                     unset($limit_exchange_buy_order);
-            } elseif (Time::up(1, 'create_order')) {
+            } elseif (Time::up(0.5, 'create_order')) {
                 if (count($open_orders) > 0) {
                     foreach ($open_orders as $open_order) {
                         if (Time::up(1, $open_order['id'], true)) {
@@ -184,11 +189,16 @@ while (true) {
                         $balances[$market_discovery] = $account_info[$market_discovery]['balances'];
                         $balances[$exchange] = $account_info[$exchange]['balances'];
 
-                        reduceBalances($balances[$market_discovery]);
-                        reduceBalances($balances[$exchange]);
-
                         if (!empty($balances[$exchange]) && !empty($balances[$market_discovery])) {
                             $prices = getPrices($orderbooks, $market_discovery, $price_margin);
+
+                            reduceBalances($balances[$market_discovery]);
+                            reduceBalances($balances[$exchange]);
+                            if (!empty($mirror_trades_info[$symbol]['sell'])) {
+                                $balances[$market_discovery][$quote_asset]['free'] -= $mirror_trades_info[$symbol]['sell'];
+                                $balances[$market_discovery][$quote_asset]['total'] -= $mirror_trades_info[$symbol]['sell'];
+                            }
+
                             $positions = getPositions($balances, $prices, $exchange, $market_discovery, $quote_asset, $use_markets);
 
                             $counting_buy = exchangeBuyMarketDiscoverySell(
@@ -219,13 +229,13 @@ while (true) {
                                             $symbol,
                                             'limit',
                                             $counting_buy['exchange']['side'],
-                                            $counting_buy['exchange']['amount']['dirty'],
+                                            Math::incrementNumber($counting_buy['exchange']['amount']['dirty'], $amount_increment),
                                             $counting_buy['exchange']['price']
                                         )
                                     ) {
                                         $limit_exchange_buy_order = ['counting' => $counting_buy, 'info' => ['id' => $create_order['id'], 'filled' => 0, 'timestamp' => microtime(true)]];
 
-                                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order created: ' . $create_order['id'] . ' limit ' . $counting_buy['exchange']['side'] . ' ' . $counting_buy['exchange']['amount']['dirty'] . ' ' . $counting_buy['exchange']['price'] . PHP_EOL;
+                                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order created: ' . $create_order['id'] . ' limit ' . $counting_buy['exchange']['side'] . ' ' . Math::incrementNumber($counting_buy['exchange']['amount']['dirty'], $amount_increment) . ' ' . $counting_buy['exchange']['price'] . PHP_EOL;
                                         echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order range: ' . $counting_buy['exchange']['price'] . ', ' . $counting_buy['market_discovery']['confidence_interval']['price_max'] . ', ' . $counting_buy['market_discovery']['confidence_interval']['price_min'] . PHP_EOL;
                                     } else
                                         echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Can not create order!!!' . PHP_EOL;
@@ -275,17 +285,21 @@ function getPositions(array $balances, array $prices, string $exchange, string $
     foreach ($markets as $market) {
         list($base_asset_market) = explode('/', $market);
 
-        $can_sell_in_quote_asset = min(
-            $balances[$market_discovery][$quote_asset]['free'] * $balances_in_quote_asset[$exchange][$base_asset_market] / $sum[$exchange],
+        $sell_mins = [
             $balances_in_quote_asset[$exchange][$base_asset_market],
             $limitation_in_quote_asset
-        );
+        ];
+        if ($sum[$exchange] != 0)
+            $sell_mins[] = $balances[$market_discovery][$quote_asset]['free'] * $balances_in_quote_asset[$exchange][$base_asset_market] / $sum[$exchange];
+        $can_sell_in_quote_asset = min(...$sell_mins);
 
-        $can_buy_in_quote_asset = min(
-            $balances[$exchange][$quote_asset]['free'] * $balances_in_quote_asset[$market_discovery][$base_asset_market] / $sum[$market_discovery],
+        $buy_mins = [
             $balances_in_quote_asset[$market_discovery][$base_asset_market],
             $limitation_in_quote_asset
-        );
+        ];
+        if ($sum[$market_discovery] != 0)
+            $buy_mins[] = $balances[$exchange][$quote_asset]['free'] * $balances_in_quote_asset[$market_discovery][$base_asset_market] / $sum[$market_discovery];
+        $can_buy_in_quote_asset = min(...$buy_mins);
 
         $positions[$market] = [
             'sell' => [
@@ -419,9 +433,9 @@ function getPrices(array $orderbooks, string $market_discovery, float $price_mar
     return $prices ?? [];
 }
 
-function getMemcachedKeys(array $exchanges, array $markets): array
+function getMemcachedKeys(array $exchanges, array $markets, string $mirror_trades_exchange): array
 {
-    $keys = ['is_good_arbitrage'];
+    $keys = ['is_good_arbitrage', 'mirrorTrades_' . $mirror_trades_exchange];
 
     foreach ($exchanges as $exchange) {
         $keys[] = 'accountInfo_' . $exchange;
@@ -445,12 +459,14 @@ function formatMemcachedData(array $data): array
                 'balances' => $datum['data']['balances'],
                 'open_orders' => $datum['data']['open_orders'] ?? []
             ];
+        } elseif (str_contains($key, 'mirrorTrades_')) {
+            $mirror_trades_info = $datum['data']['leftovers'];
         } else {
             $orderbooks[$datum['data']['orderbook']['exchange']][$datum['data']['orderbook']['symbol']] = $datum['data']['orderbook'];
         }
     }
 
-    return [$orderbooks ?? [], $account_info ?? [], $is_good_arbitrage ?? false];
+    return [$orderbooks ?? [], $account_info ?? [], $mirror_trades_info ?? [], $is_good_arbitrage ?? false];
 }
 
 function proofOrderbooks(array $orderbooks, array $markets): bool

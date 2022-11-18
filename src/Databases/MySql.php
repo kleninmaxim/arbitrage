@@ -20,7 +20,7 @@ class MySql
 
     public PDO $connection;
     private string $query = '';
-    private ?array $execute_array;
+    private ?array $execute_array = [];
 
     public function __construct($config)
     {
@@ -159,7 +159,6 @@ class MySql
     public function getLastInsertId(): static
     {
         $this->query = /** @lang sql */ 'SELECT LAST_INSERT_ID() AS last_id';
-        $this->execute_array = [];
         return $this;
     }
 
@@ -188,7 +187,7 @@ class MySql
 
         $sth->execute($execute_array ?: $this->execute_array);
 
-        [$this->execute_array, $this->query] = [null, ''];
+        [$this->execute_array, $this->query] = [[], ''];
 
         return $sth;
     }

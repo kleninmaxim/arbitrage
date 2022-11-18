@@ -8,8 +8,6 @@ use function Ratchet\Client\connect;
 require_once dirname(__DIR__, 3) . '/index.php';
 require_once __DIR__ . '/helper/exmo_functions.php';
 
-$memcached = \Src\Databases\Memcached::init();
-
 connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
     // CONFIG
     $config = Config::config('arbitrage', 'first');

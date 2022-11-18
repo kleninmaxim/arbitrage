@@ -12,14 +12,8 @@ foreach ($watchers as $service_name => $settings)
         $is_start = Pm2::start(
             __DIR__ . '/' . $service_name . '.php',
             $setting['name'],
-            'orderbooks',
-            [$key],
-            true
+            'orderbooks'
         );
 
-        if ($is_start) {
-            echo '[' . date('Y-m-d H:i:s') . '] [OK] ' . $setting['name'] . PHP_EOL;
-        } else {
-            echo '[' . date('Y-m-d H:i:s') . '] [ERROR] ' . $setting['name'] . PHP_EOL;
-        }
+        echo '[' . date('Y-m-d H:i:s') . '] ' . ($is_start ? '[OK] ' : '[ERROR] ') . $setting['name'] . PHP_EOL;
     }

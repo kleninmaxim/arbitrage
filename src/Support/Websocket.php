@@ -30,7 +30,9 @@ class Websocket
 
     public function receive(): mixed
     {
-        return json_decode($this->client->receive(), true);
+        $message = $this->client->receive();
+
+        return is_string($message) ? json_decode($message, true) : $message;
     }
 
     public function close(): void

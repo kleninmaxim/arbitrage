@@ -59,23 +59,23 @@ class ExmoWatcher implements OrderbookWatcher
 
         while (true) {
             try {
-                $data = $websocket->receive();
+                if ($data = $websocket->receive()) {
+                    $process_data = $this->exmo->processWebsocketData($data, $streams);
 
-                $process_data = $this->exmo->processWebsocketData($data, $streams);
+                    if ($process_data['response'] == 'orderbook') {
+                        $orderbook->recordOrderbook(
+                            $this->service_name,
+                            $this->exmo->getName(),
+                            $process_data['data']
+                        );
 
-                if ($process_data['response'] == 'orderbook') {
-                    $orderbook->recordOrderbook(
-                        $this->service_name,
-                        $this->exmo->getName(),
-                        $process_data['data']
-                    );
-
-                    if (Time::up(60, 'get_orderbook', true))
-                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Get orderbook' . PHP_EOL;
-                } elseif ($process_data['response'] == 'greeting_message') {
-                    echo '[' . date('Y-m-d H:i:s') . '] Connection is established with session id: ' . $process_data['data']['session_id'] . PHP_EOL;
-                } elseif ($process_data['response'] == 'response') {
-                    echo '[' . date('Y-m-d H:i:s') . '] Topic: ' . $process_data['data']['topic'] . ' is ' . $process_data['data']['event'] . PHP_EOL;
+                        if (Time::up(60, 'get_orderbook', true))
+                            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Get orderbook' . PHP_EOL;
+                    } elseif ($process_data['response'] == 'greeting_message') {
+                        echo '[' . date('Y-m-d H:i:s') . '] Connection is established with session id: ' . $process_data['data']['session_id'] . PHP_EOL;
+                    } elseif ($process_data['response'] == 'response') {
+                        echo '[' . date('Y-m-d H:i:s') . '] Topic: ' . $process_data['data']['topic'] . ' is ' . $process_data['data']['event'] . PHP_EOL;
+                    }
                 }
             } catch (Exception $e) {
                 $orderbook->recordOrderbook(

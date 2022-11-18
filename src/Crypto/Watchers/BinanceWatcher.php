@@ -59,20 +59,21 @@ class BinanceWatcher implements OrderbookWatcher
 
         while (true) {
             try {
-                $data = $websocket->receive();
-                $process_data = $this->binance->processWebsocketData($data, $streams);
+                if ($data = $websocket->receive()) {
+                    $process_data = $this->binance->processWebsocketData($data, $streams);
 
-                if ($process_data['response'] == 'orderbook') {
-                    $orderbook->recordOrderbook(
-                        $this->service_name,
-                        $this->binance->getName(),
-                        $process_data['data']
-                    );
+                    if ($process_data['response'] == 'orderbook') {
+                        $orderbook->recordOrderbook(
+                            $this->service_name,
+                            $this->binance->getName(),
+                            $process_data['data']
+                        );
 
-                    if (Time::up(60, 'get_orderbook', true))
-                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Get orderbook' . PHP_EOL;
-                } elseif ($process_data['response'] == 'result')
-                    echo '[' . date('Y-m-d H:i:s') . '] The request sent was a successful' . PHP_EOL;
+                        if (Time::up(60, 'get_orderbook', true))
+                            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Get orderbook' . PHP_EOL;
+                    } elseif ($process_data['response'] == 'result')
+                        echo '[' . date('Y-m-d H:i:s') . '] The request sent was a successful' . PHP_EOL;
+                }
             } catch (Exception $e) {
                 $orderbook->recordOrderbook(
                     $this->service_name,

@@ -7,6 +7,7 @@ use Src\Crypto\Exchanges\Original\Exmo;
 use Src\Services\Orderbook\OrderbookWorker;
 use Src\Services\Orderbook\OrderbookWatcher;
 use Src\Support\Log;
+use Src\Support\Time;
 use Src\Support\Websocket;
 
 class ExmoWatcher implements OrderbookWatcher
@@ -68,6 +69,9 @@ class ExmoWatcher implements OrderbookWatcher
                         $this->exmo->getName(),
                         $process_data['data']
                     );
+
+                    if (Time::up(60, 'get_orderbook', true))
+                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Get orderbook' . PHP_EOL;
                 } elseif ($process_data['response'] == 'greeting_message') {
                     echo '[' . date('Y-m-d H:i:s') . '] Connection is established with session id: ' . $process_data['data']['session_id'] . PHP_EOL;
                 } elseif ($process_data['response'] == 'response') {

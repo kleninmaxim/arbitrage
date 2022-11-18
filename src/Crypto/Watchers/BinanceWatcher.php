@@ -7,6 +7,7 @@ use Src\Crypto\Exchanges\Original\Binance;
 use Src\Services\Orderbook\OrderbookWorker;
 use Src\Services\Orderbook\OrderbookWatcher;
 use Src\Support\Log;
+use Src\Support\Time;
 use Src\Support\Websocket;
 
 class BinanceWatcher implements OrderbookWatcher
@@ -67,6 +68,9 @@ class BinanceWatcher implements OrderbookWatcher
                         $this->binance->getName(),
                         $process_data['data']
                     );
+
+                    if (Time::up(60, 'get_orderbook', true))
+                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Get orderbook' . PHP_EOL;
                 } elseif ($process_data['response'] == 'result')
                     echo '[' . date('Y-m-d H:i:s') . '] The request sent was a successful' . PHP_EOL;
             } catch (Exception $e) {

@@ -7,6 +7,7 @@ use Src\Crypto\Ccxt;
 use Src\Services\Orderbook\OrderbookWorker;
 use Src\Services\Orderbook\OrderbookWatcher;
 use Src\Support\Log;
+use Src\Support\Time;
 
 class CcxtWatcher implements OrderbookWatcher
 {
@@ -56,6 +57,9 @@ class CcxtWatcher implements OrderbookWatcher
                     $this->ccxt->name,
                     $this->ccxt->getOrderBook($this->symbol, $this->depth)
                 );
+
+                if (Time::up(60, 'get_orderbook', true))
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Get orderbook' . PHP_EOL;
             } catch (Exception $e) {
                 $orderbook->recordOrderbook(
                     $this->service_name,

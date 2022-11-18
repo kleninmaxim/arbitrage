@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.21, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: mt
+-- Host: 127.0.0.1    Database: arbitrage
 -- ------------------------------------------------------
 -- Server version	8.0.31-0ubuntu0.20.04.1
 
@@ -18,6 +18,8 @@
 --
 -- Table structure for table `balances`
 --
+
+NOT ACTUAL!!!!!!!!! BE CAREFULL!
 
 DROP TABLE IF EXISTS `balances`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -104,8 +106,8 @@ DROP TABLE IF EXISTS `orders`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `orders` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `order_id` int unsigned NOT NULL,
   `exchange_id` int unsigned NOT NULL,
+  `order_id` varchar(255) NOT NULL,
   `symbol` varchar(31) NOT NULL,
   `side` varchar(4) NOT NULL,
   `price` decimal(25,8) NOT NULL,
@@ -142,8 +144,8 @@ DROP TABLE IF EXISTS `trades`;
 CREATE TABLE `trades` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `exchange_id` int unsigned NOT NULL,
-  `trade_id` int NOT NULL,
-  `order_id` int NOT NULL,
+  `trade_id` varchar(255) NOT NULL,
+  `order_id` varchar(255) NOT NULL,
   `symbol` varchar(31) NOT NULL,
   `trade_type` varchar(5) DEFAULT NULL,
   `side` varchar(4) NOT NULL,
@@ -172,11 +174,11 @@ LOCK TABLES `trades` WRITE;
 UNLOCK TABLES;
 
 --
--- Dumping events for database 'mt'
+-- Dumping events for database 'arbitrage'
 --
 
 --
--- Dumping routines for database 'mt'
+-- Dumping routines for database 'arbitrage'
 --
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -188,4 +190,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-11-17 20:03:25
+-- Dump completed on 2022-11-18 15:06:34

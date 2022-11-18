@@ -82,7 +82,7 @@ while (true) {
     }
 
     if (Time::up(60, 'db_job_len', true))
-        echo '[' . date('Y-m-d H:i:s') . '] exmo_balances: ' . $redis->getLen('exmo_balances') . ', exmo_orders: ' . $redis->getLen('exmo_orders') . ', exmo_mirror_order_and_trade: ' . $redis->getLen('exmo_mirror_order_and_trade') . PHP_EOL;
+        echo '[' . date('Y-m-d H:i:s') . '] [INFO] exmo_balances: ' . $redis->getLen('exmo_balances') . ', exmo_orders: ' . $redis->getLen('exmo_orders') . ', exmo_mirror_order_and_trade: ' . $redis->getLen('exmo_mirror_order_and_trade') . PHP_EOL;
 }
 
 /*

@@ -57,9 +57,8 @@ class BinanceWatcher implements OrderbookWatcher
         $websocket->send($this->binance->getRequest($this->all_streams));
 
         while (true) {
-            $data = $websocket->receive();
-
             try {
+                $data = $websocket->receive();
                 $process_data = $this->binance->processWebsocketData($data, $streams);
 
                 if ($process_data['response'] == 'orderbook') {
@@ -77,7 +76,7 @@ class BinanceWatcher implements OrderbookWatcher
                     []
                 );
 
-                Log::error($e, $data);
+                Log::error($e, $data ?? []);
                 throw $e;
             }
         }

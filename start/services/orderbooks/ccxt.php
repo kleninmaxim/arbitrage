@@ -12,7 +12,7 @@ if (!isset($argv[1]))
 
 $key = $argv[1];
 
-$config = Config::config('services_orderbooks', 'watchers', 'dev', 'ccxt', $key);
+$config = Config::file('services_orderbooks', 'watchers')['ccxt'][$key];
 
 $exchange = $config['exchange'];
 $symbol = $config['symbol'];

@@ -57,9 +57,9 @@ class ExmoWatcher implements OrderbookWatcher
         $websocket->send($this->exmo->getRequest($this->all_streams));
 
         while (true) {
-            $data = $websocket->receive();
-
             try {
+                $data = $websocket->receive();
+
                 $process_data = $this->exmo->processWebsocketData($data, $streams);
 
                 if ($process_data['response'] == 'orderbook') {
@@ -80,7 +80,7 @@ class ExmoWatcher implements OrderbookWatcher
                     []
                 );
 
-                Log::error($e, $data);
+                Log::error($e, $data ?? []);
                 throw $e;
             }
         }

@@ -72,7 +72,7 @@ while (true) {
                     }
                 } elseif ((microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > 1)
                     unset($limit_exchange_sell_order);
-            } elseif (Time::up(0.5, 'create_order')) {
+            } elseif (Time::up(0.5, 'create_order_exchange_sell')) {
                 if (count($open_orders) > 0) {
                     foreach ($open_orders as $open_order) {
                         if (Time::up(1, $open_order['id'], true)) {
@@ -107,7 +107,7 @@ while (true) {
                                 $price_increment
                             );
 
-                            if ($counting_sell && $orderbooks[$exchange][$symbol]['bids'][0][0] > $counting_sell['exchange']['price'])
+                            if ($counting_sell && $orderbooks[$exchange][$symbol]['bids'][0][0] > $counting_sell['exchange']['price']) {
                                 $counting_sell = exchangeSellMarketDiscoveryBuy(
                                     $orderbooks[$market_discovery][$symbol],
                                     Math::incrementNumber($positions[$symbol]['sell']['base_asset'] * 0.99, $amount_increment),
@@ -117,6 +117,8 @@ while (true) {
                                     $amount_increment,
                                     $price_increment
                                 );
+                            } else
+                                echo '[' . date('Y-m-d H:i:s') . '] [WARNING] May be not enough balance' . PHP_EOL;
 
                             if ($counting_sell && $counting_sell['market_discovery']['confidence_interval']['price_max'] < $positions[$symbol]['sell']['price']) {
                                 if ($counting_sell['exchange']['amount'] * $counting_sell['exchange']['price'] > $min_deal_amount) {
@@ -176,7 +178,7 @@ while (true) {
                     }
                 } elseif ((microtime(true) - $limit_exchange_buy_order['info']['timestamp']) > 1)
                     unset($limit_exchange_buy_order);
-            } elseif (Time::up(0.5, 'create_order')) {
+            } elseif (Time::up(0.5, 'create_order_exchange_buy')) {
                 if (count($open_orders) > 0) {
                     foreach ($open_orders as $open_order) {
                         if (Time::up(1, $open_order['id'], true)) {
@@ -211,7 +213,7 @@ while (true) {
                                 $price_increment
                             );
 
-                            if ($counting_buy && $orderbooks[$exchange][$symbol]['asks'][0][0] < $counting_buy['exchange']['price'])
+                            if ($counting_buy && $orderbooks[$exchange][$symbol]['asks'][0][0] < $counting_buy['exchange']['price']) {
                                 $counting_buy = exchangeBuyMarketDiscoverySell(
                                     $orderbooks[$market_discovery][$symbol],
                                     $positions[$symbol]['buy']['quote_asset'] * 0.99,
@@ -221,6 +223,8 @@ while (true) {
                                     $amount_increment,
                                     $price_increment
                                 );
+                            } else
+                                echo '[' . date('Y-m-d H:i:s') . '] [WARNING] May be not enough balance' . PHP_EOL;
 
                             if ($counting_buy && $counting_buy['market_discovery']['confidence_interval']['price_min'] > $positions[$symbol]['buy']['price']) {
                                 if ($counting_buy['exchange']['quote'] > $min_deal_amount) {
@@ -252,7 +256,7 @@ while (true) {
         echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Memcached data is false!!!' . PHP_EOL;
 
     // VERY IMPORTANT RESET UNUSED TIME PREFIX AND GIVE LIST USED PREFIX
-    Time::update(['create_order']);
+    Time::update(['create_order_exchange_sell', 'create_order_exchange_buy']);
 }
 
 function isOrderInRange($limit_exchange_order, $imitation_market_order): bool

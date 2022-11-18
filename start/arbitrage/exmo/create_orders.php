@@ -107,7 +107,7 @@ while (true) {
                                 $price_increment
                             );
 
-                            if ($orderbooks[$exchange][$symbol]['bids'][0][0] > $counting_sell['exchange']['price'])
+                            if ($counting_sell && $orderbooks[$exchange][$symbol]['bids'][0][0] > $counting_sell['exchange']['price'])
                                 $counting_sell = exchangeSellMarketDiscoveryBuy(
                                     $orderbooks[$market_discovery][$symbol],
                                     Math::incrementNumber($positions[$symbol]['sell']['base_asset'] * 0.99, $amount_increment),
@@ -211,7 +211,7 @@ while (true) {
                                 $price_increment
                             );
 
-                            if ($orderbooks[$exchange][$symbol]['asks'][0][0] < $counting_buy['exchange']['price'])
+                            if ($counting_buy && $orderbooks[$exchange][$symbol]['asks'][0][0] < $counting_buy['exchange']['price'])
                                 $counting_buy = exchangeBuyMarketDiscoverySell(
                                     $orderbooks[$market_discovery][$symbol],
                                     $positions[$symbol]['buy']['quote_asset'] * 0.99,

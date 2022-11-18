@@ -462,7 +462,7 @@ function formatMemcachedData(array $data): array
         } elseif (str_contains($key, 'mirrorTrades_')) {
             $mirror_trades_info = $datum['data']['leftovers'];
         } else {
-            $orderbooks[$datum['data']['orderbook']['exchange']][$datum['data']['orderbook']['symbol']] = $datum['data']['orderbook'];
+            $orderbooks[$datum['data']['exchange']][$datum['data']['symbol']] = $datum['data'];
         }
     }
 

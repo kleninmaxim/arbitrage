@@ -70,7 +70,7 @@ while (true) {
                         }
                         unset($limit_exchange_sell_order);
                     }
-                } elseif ((microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > 3)
+                } elseif ((microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > 1)
                     unset($limit_exchange_sell_order);
             } elseif (Time::up(0.5, 'create_order')) {
                 if (count($open_orders) > 0) {
@@ -174,7 +174,7 @@ while (true) {
                         }
                         unset($limit_exchange_buy_order);
                     }
-                } elseif ((microtime(true) - $limit_exchange_buy_order['info']['timestamp']) > 3)
+                } elseif ((microtime(true) - $limit_exchange_buy_order['info']['timestamp']) > 1)
                     unset($limit_exchange_buy_order);
             } elseif (Time::up(0.5, 'create_order')) {
                 if (count($open_orders) > 0) {

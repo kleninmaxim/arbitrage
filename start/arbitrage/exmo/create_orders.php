@@ -126,7 +126,7 @@ while (true) {
                                             'limit',
                                             $counting_sell['exchange']['side'],
                                             Math::incrementNumber($counting_sell['exchange']['amount'], $amount_increment),
-                                            max($counting_sell['exchange']['price'], $orderbooks[$exchange][$symbol]['asks'][0][0])
+                                            max($counting_sell['exchange']['price'], Math::incrementNumber($orderbooks[$exchange][$symbol]['asks'][0][0] - 2 * $price_increment, $price_increment))
                                         )
                                     ) {
                                         $limit_exchange_sell_order = ['counting' => $counting_sell, 'info' => ['id' => $create_order['id'], 'filled' => 0, 'timestamp' => microtime(true)]];
@@ -231,7 +231,7 @@ while (true) {
                                             'limit',
                                             $counting_buy['exchange']['side'],
                                             Math::incrementNumber($counting_buy['exchange']['amount']['dirty'], $amount_increment),
-                                            min($counting_buy['exchange']['price'], $orderbooks[$exchange][$symbol]['bids'][0][0])
+                                            min($counting_buy['exchange']['price'], Math::incrementNumber($orderbooks[$exchange][$symbol]['bids'][0][0] + 2 * $price_increment, $price_increment))
                                         )
                                     ) {
                                         $limit_exchange_buy_order = ['counting' => $counting_buy, 'info' => ['id' => $create_order['id'], 'filled' => 0, 'timestamp' => microtime(true)]];

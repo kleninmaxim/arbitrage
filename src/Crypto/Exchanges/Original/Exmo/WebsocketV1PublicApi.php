@@ -10,7 +10,7 @@ use Src\Support\Log;
 
 class WebsocketV1PublicApi extends Exmo implements Websocket, HasWebsocketOrderbook
 {
-    public array $websocket_options = [];
+    public array $websocket_options = ['id' => 1];
     const WEBSOCKET_ENDPOINT= 'wss://ws-api.exmo.com:443/v1/public';
 
     public function messageRequestToSubscribeOrderbooks(array $symbols): string
@@ -109,7 +109,7 @@ class WebsocketV1PublicApi extends Exmo implements Websocket, HasWebsocketOrderb
     {
         return json_encode([
             'method' => 'subscribe',
-            'id' => 1,
+            'id' => $this->websocket_options['id']++,
             'topics' => $topics
         ]);
     }

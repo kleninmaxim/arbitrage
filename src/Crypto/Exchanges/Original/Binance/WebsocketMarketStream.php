@@ -10,7 +10,7 @@ use Src\Support\Log;
 
 class WebsocketMarketStream extends Binance implements Websocket, HasWebsocketOrderbook
 {
-    public array $websocket_options = [];
+    public array $websocket_options = ['id' => 1];
     const WEBSOCKET_ENDPOINT = 'wss://stream.binance.com:9443/stream';
 
     public function messageRequestToSubscribeOrderbooks(array $symbols): string
@@ -86,7 +86,7 @@ class WebsocketMarketStream extends Binance implements Websocket, HasWebsocketOr
         return json_encode([
             'method' => 'SUBSCRIBE',
             'params' => $params,
-            'id' => 1
+            'id' => $this->websocket_options['id']++
         ]);
     }
 }

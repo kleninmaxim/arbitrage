@@ -17,11 +17,13 @@ $config = Config::config('arbitrage', 'first');
 $exchange = $config['exchange'];
 $market_discovery = $config['market_discovery'];
 $usleep = $config['usleep'];
-$fees = $config['fees'];
 $quote_asset = $config['quote_asset'];
 $min_deal_amount = $config['min_deal_amount'];
-$profits = $config['profits'];
 $price_margin = $config['price_margin'];
+$order_lifetime = $config['order_lifetime'];
+$create_order_latency = $config['create_order_latency'];
+$profits = $config['profits'];
+$fees = $config['fees'];
 $use_markets = $config['use_markets'];
 $info_of_markets = $config['info_of_markets'];
 
@@ -59,7 +61,8 @@ while (true) {
                     if (
                         empty($orderbooks[$market_discovery][$symbol]) ||
                         !($imitation_market_order = imitationMarketOrderBuy($orderbooks[$market_discovery][$symbol], $limit_exchange_sell_order['counting']['market_discovery']['amount']['dirty'], $price_increment)) ||
-                        !isOrderInRange($limit_exchange_sell_order, $imitation_market_order)
+                        !isOrderInRange($limit_exchange_sell_order, $imitation_market_order) ||
+                        (microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > $order_lifetime
                     ) {
                         if (Time::up(1, $limit_exchange_sell_order['info']['id'], true)) {
                             $ccxt_exchange->cancelOrder($limit_exchange_sell_order['info']['id'], $symbol);
@@ -67,9 +70,9 @@ while (true) {
                         }
                         unset($limit_exchange_sell_order);
                     }
-                } elseif ((microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > 1)
+                } elseif ((microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > 2)
                     unset($limit_exchange_sell_order);
-            } elseif (Time::up(0.5, 'create_order_exchange_sell')) {
+            } elseif (Time::up($create_order_latency, 'create_order_exchange_sell')) {
                 if (count($open_orders) > 0) {
                     foreach ($open_orders as $open_order) {
                         if (Time::up(1, $open_order['id'], true)) {
@@ -123,7 +126,7 @@ while (true) {
                                             'limit',
                                             $counting_sell['exchange']['side'],
                                             Math::incrementNumber($counting_sell['exchange']['amount'], $amount_increment),
-                                            $counting_sell['exchange']['price']
+                                            max($counting_sell['exchange']['price'], $orderbooks[$exchange][$symbol]['asks'][0][0])
                                         )
                                     ) {
                                         $limit_exchange_sell_order = ['counting' => $counting_sell, 'info' => ['id' => $create_order['id'], 'filled' => 0, 'timestamp' => microtime(true)]];
@@ -163,7 +166,8 @@ while (true) {
                     if (
                         empty($orderbooks[$market_discovery][$symbol]) ||
                         !($imitation_market_order = imitationMarketOrderSell($orderbooks[$market_discovery][$symbol], $limit_exchange_buy_order['counting']['market_discovery']['quote']['dirty'])) ||
-                        !isOrderInRange($limit_exchange_buy_order, $imitation_market_order)
+                        !isOrderInRange($limit_exchange_buy_order, $imitation_market_order) ||
+                        (microtime(true) - $limit_exchange_buy_order['info']['timestamp']) > $order_lifetime
                     ) {
                         if (Time::up(1, $limit_exchange_buy_order['info']['id'], true)) {
                             $ccxt_exchange->cancelOrder($limit_exchange_buy_order['info']['id'], $symbol);
@@ -171,9 +175,9 @@ while (true) {
                         }
                         unset($limit_exchange_buy_order);
                     }
-                } elseif ((microtime(true) - $limit_exchange_buy_order['info']['timestamp']) > 1)
+                } elseif ((microtime(true) - $limit_exchange_buy_order['info']['timestamp']) > 2)
                     unset($limit_exchange_buy_order);
-            } elseif (Time::up(0.5, 'create_order_exchange_buy')) {
+            } elseif (Time::up($create_order_latency, 'create_order_exchange_buy')) {
                 if (count($open_orders) > 0) {
                     foreach ($open_orders as $open_order) {
                         if (Time::up(1, $open_order['id'], true)) {
@@ -227,7 +231,7 @@ while (true) {
                                             'limit',
                                             $counting_buy['exchange']['side'],
                                             Math::incrementNumber($counting_buy['exchange']['amount']['dirty'], $amount_increment),
-                                            $counting_buy['exchange']['price']
+                                            min($counting_buy['exchange']['price'], $orderbooks[$exchange][$symbol]['bids'][0][0])
                                         )
                                     ) {
                                         $limit_exchange_buy_order = ['counting' => $counting_buy, 'info' => ['id' => $create_order['id'], 'filled' => 0, 'timestamp' => microtime(true)]];

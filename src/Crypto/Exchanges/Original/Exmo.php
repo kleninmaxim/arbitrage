@@ -4,9 +4,20 @@ namespace Src\Crypto\Exchanges\Original;
 
 class Exmo
 {
-    private string $name = 'exmo';
-    private string $websocket_connection = 'wss://ws-api.exmo.com:443/v1/public';
-    private array $stream_names = [
-        'order_book_snapshots' => 'spot/order_book_snapshots:'
-    ];
+    protected string $name = 'exmo';
+
+    public function __construct()
+    {
+
+    }
+
+    public static function init(): static
+    {
+        return new static();
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
 }

@@ -36,9 +36,9 @@ class Time
     {
         $now = microtime(true);
 
-        foreach (self::$start as $pr => $item)
-            if ($now >= $item && !in_array($pr, $except))
-                unset(self::$start[$pr]);
+        foreach (self::$start as $prefix => $microtime)
+            if ($now >= $microtime && !in_array($prefix, $except))
+                unset(self::$start[$prefix]);
     }
 
     public static function get(): array

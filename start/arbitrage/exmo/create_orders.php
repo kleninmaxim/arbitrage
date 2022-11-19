@@ -16,15 +16,12 @@ $config = Config::config('arbitrage', 'first');
 
 $exchange = $config['exchange'];
 $market_discovery = $config['market_discovery'];
-$sleep = $config['sleep'];
-$orderbook_depth = $config['orderbook_depth'];
+$usleep = $config['usleep'];
 $fees = $config['fees'];
 $quote_asset = $config['quote_asset'];
 $min_deal_amount = $config['min_deal_amount'];
 $profits = $config['profits'];
 $price_margin = $config['price_margin'];
-$lifetime = $config['lifetime'];
-$assets = $config['assets'];
 $use_markets = $config['use_markets'];
 $info_of_markets = $config['info_of_markets'];
 
@@ -41,7 +38,7 @@ $ccxt_exchange = Ccxt::init($exchange, api_key: $api_keys_exchange['api_public']
 $ccxt_market_discovery = Ccxt::init($market_discovery, api_key: $api_keys_market_discovery['api_public'], api_secret: $api_keys_market_discovery['api_private']);
 
 while (true) {
-    usleep(1000);
+    usleep($usleep);
 
     if ($data = $memcached->get($keys)) {
         list($orderbooks, $account_info, $mirror_trades_info) = formatMemcachedData($data);

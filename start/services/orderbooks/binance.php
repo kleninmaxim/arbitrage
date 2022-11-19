@@ -55,5 +55,5 @@ connect(WebsocketMarketStream::WEBSOCKET_ENDPOINT)->then(function ($conn) {
         echo '[' . date('Y-m-d H:i:s') . '] Connection closed. Code: ' . $code . '; Reason: ' . $reason . PHP_EOL;
     });
 }, function (Exception $e) {
-    echo "Could not connect: {$e->getMessage()}" . PHP_EOL;
+    echo '[' . date('Y-m-d H:i:s') . '] [ERROR] Could not connect: ' . $e->getMessage() . PHP_EOL;
 });

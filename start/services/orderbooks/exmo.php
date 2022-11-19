@@ -45,7 +45,6 @@ connect(WebsocketV1PublicApi::WEBSOCKET_ENDPOINT)->then(function ($conn) {
                     Log::warning(['message' => 'Unexpected data get from websocket', 'file' => __FILE__, '$data' => $data]);
             } else {
                 echo '[' . date('Y-m-d H:i:s') . '] Websocket mirror_trades get null from onMessage' . PHP_EOL;
-
                 Log::warning(['message' => 'Websocket mirror_trades get null from onMessage', 'file' => __FILE__]);
             }
         } catch (Exception $e) {
@@ -58,5 +57,5 @@ connect(WebsocketV1PublicApi::WEBSOCKET_ENDPOINT)->then(function ($conn) {
         echo '[' . date('Y-m-d H:i:s') . '] Connection closed. Code: ' . $code . '; Reason: ' . $reason . PHP_EOL;
     });
 }, function (Exception $e) {
-    echo "Could not connect: {$e->getMessage()}" . PHP_EOL;
+    echo '[' . date('Y-m-d H:i:s') . '] [ERROR] Could not connect: ' . $e->getMessage() . PHP_EOL;
 });

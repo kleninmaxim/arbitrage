@@ -3,13 +3,15 @@
 namespace Src\Crypto\Exchanges\Original\Binance;
 
 use Exception;
+use Src\Crypto\Exchanges\Original\Support\HasWebsocketOrderbook;
+use Src\Crypto\Exchanges\Original\Support\Websocket;
 use Src\Standards\WebsocketDataStandard;
 use Src\Support\Log;
 
-class WebsocketMarketStream extends Binance
+class WebsocketMarketStream extends Binance implements Websocket, HasWebsocketOrderbook
 {
     public array $websocket_options = [];
-    const WEBSOCKET_ENDPOINT= 'wss://stream.binance.com:9443/stream';
+    const WEBSOCKET_ENDPOINT = 'wss://stream.binance.com:9443/stream';
 
     public function messageRequestToSubscribeOrderbooks(array $symbols): string
     {
@@ -19,7 +21,7 @@ class WebsocketMarketStream extends Binance
     /**
      * @throws Exception
      */
-    public function processWebsocketData(mixed $data): array
+    public function processWebsocketData(mixed $data, array $options = []): array
     {
         if ($is = $this->isOrderbook($data))
             return $is;
@@ -53,7 +55,7 @@ class WebsocketMarketStream extends Binance
     /**
      * @throws Exception
      */
-    public function isResult(array $data): ?array
+    private function isResult(array $data): ?array
     {
         if (empty($data['result']) && !empty($data['id'])) {
             if (is_null($data['result']) && $data['id'] == 1)

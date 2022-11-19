@@ -1,6 +1,6 @@
 <?php
 
-namespace Src\Crypto\Exchanges\Original;
+namespace Src\Crypto\Exchanges\Original\Exmo;
 
 class Exmo
 {

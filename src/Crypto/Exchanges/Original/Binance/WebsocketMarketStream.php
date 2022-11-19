@@ -57,7 +57,7 @@ class WebsocketMarketStream extends Binance
     {
         if (empty($data['result']) && !empty($data['id'])) {
             if (is_null($data['result']) && $data['id'] == 1)
-                WebsocketDataStandard::original('isResult');
+                return WebsocketDataStandard::original('isResult');
 
             throw new Exception('The request sent was unsuccessful');
         }

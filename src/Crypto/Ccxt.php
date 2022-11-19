@@ -80,19 +80,14 @@ class Ccxt
         return null;
     }
 
-    public function getBalances(array $assets = null): array|null
+    public function getBalances(array $assets = []): array|null
     {
         try {
             $balances = $this->exchange->fetch_balance();
 
-            if ($assets) {
-                foreach ($assets as $asset) {
-                    if (!empty($balances[$asset])) {
-                        $modify_balances[$asset] = $balances[$asset];
-                    } else {
-                        $modify_balances[$asset] = ['free' => 0, 'used' => 0, 'total' => 0];
-                    }
-                }
+            if (!empty($assets)) {
+                foreach ($assets as $asset)
+                    $modify_balances[$asset] = (!empty($balances[$asset])) ? $balances[$asset] : ['free' => 0, 'used' => 0, 'total' => 0];
 
                 return $modify_balances ?? [];
             }

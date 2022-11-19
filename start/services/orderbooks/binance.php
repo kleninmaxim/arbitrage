@@ -1,5 +1,6 @@
 <?php
 
+use Src\Crypto\Exchanges\Original\Binance\WebsocketMarketStream;
 use Src\Support\Config;
 use Src\Support\Log;
 use Src\Support\Time;
@@ -7,33 +8,29 @@ use function Ratchet\Client\connect;
 
 require_once dirname(__DIR__, 3) . '/index.php';
 
-connect('wss://stream.binance.com:9443/stream')->then(function ($conn) {
+connect(WebsocketMarketStream::WEBSOCKET_ENDPOINT)->then(function ($conn) {
+    // ZERO
+    $binance_websocket = WebsocketMarketStream::init();
+    // ZERO
+
     // CONFIG
-    $exchange = 'binance';
+    $exchange = $binance_websocket->getName();
     $config = Config::file('services_orderbooks', 'watchers')[$exchange];
     $markets = $config['markets'];
     // CONFIG
 
     // COUNT NECESSARY INFO
     $memcached = \Src\Databases\Memcached::init();
-    $original_markets = [];
-    foreach ($markets as $market)
-        $original_markets[mb_strtolower(str_replace('/', '', $market))] = $market;
-    $stream = '@depth10@100ms';
     // COUNT NECESSARY INFO
 
     // LOGIN AND SUBSCRIBE
-    $conn->send(json_encode([
-        'method' => 'SUBSCRIBE',
-        'params' => array_map(fn($market) => mb_strtolower(str_replace('/', '', $market)) . $stream, $markets),
-        'id' => 1
-    ]));
+    $conn->send($binance_websocket->messageRequestToSubscribeOrderbooks($markets));
     // LOGIN AND SUBSCRIBE
 
-    $conn->on('message', function ($msg) use ($memcached, $exchange, $original_markets, $stream) {
+    $conn->on('message', function ($msg) use ($binance_websocket, $memcached, $exchange) {
         try {
             if ($msg !== null) {
-                $data = processWebsocketData(json_decode($msg, true), ['exchange' => $exchange, 'original_markets' => $original_markets, 'stream' => $stream]);
+                $data = $binance_websocket->processWebsocketData(json_decode($msg, true));
 
                 if ($data['response'] == 'isOrderbook') {
                     $memcached->set($exchange . '_' . $data['data']['symbol'], $data['data']);
@@ -42,12 +39,10 @@ connect('wss://stream.binance.com:9443/stream')->then(function ($conn) {
                         echo '[' . date('Y-m-d H:i:s') . '] [INFO] Get orderbook: '. $data['data']['symbol'] . PHP_EOL;
                 } elseif ($data['response'] == 'isResult') {
                     echo '[' . date('Y-m-d H:i:s') . '] The request sent was a successful' . PHP_EOL;
-                } else {
+                } else
                     Log::warning(['message' => 'Unexpected data get from websocket', 'file' => __FILE__, '$data' => $data]);
-                }
             } else {
                 echo '[' . date('Y-m-d H:i:s') . '] Websocket mirror_trades get null from onMessage' . PHP_EOL;
-
                 Log::warning(['message' => 'Websocket mirror_trades get null from onMessage', 'file' => __FILE__]);
             }
         } catch (Exception $e) {
@@ -62,55 +57,3 @@ connect('wss://stream.binance.com:9443/stream')->then(function ($conn) {
 }, function (Exception $e) {
     echo "Could not connect: {$e->getMessage()}" . PHP_EOL;
 });
-
-/**
- * @throws Exception
- */
-function processWebsocketData(mixed $data, array $options = []): array
-{
-    if (!empty($options['exchange']) && !empty($options['original_markets']) && !empty($options['stream']))
-        if ($is = isOrderbook($data, $options['exchange'], $options['original_markets'], $options['stream']))
-            return $is;
-
-    if ($is = isResult($data))
-        return $is;
-
-    return ['response' => 'error', 'data' => null];
-}
-
-function isOrderbook($data, $exchange, $original_markets, $stream): array
-{
-    if (!empty($data['stream']) && !empty($data['data'])) {
-        if (!empty($data['data']['bids']) && !empty($data['data']['asks']) && !empty($data['data']['lastUpdateId'])) {
-            return [
-                'response' => 'isOrderbook',
-                'data' => [
-                    'symbol' => $original_markets[str_replace($stream, '', $data['stream'])],
-                    'bids' => $data['data']['bids'],
-                    'asks' => $data['data']['asks'],
-                    'timestamp' => null,
-                    'datetime' => null,
-                    'nonce' => $data['data']['lastUpdateId'],
-                    'exchange' => $exchange
-                ]
-            ];
-        }
-    }
-
-    return [];
-}
-
-/**
- * @throws Exception
- */
-function isResult($data): array
-{
-    if (empty($data['result']) && !empty($data['id'])) {
-        if (is_null($data['result']) && $data['id'] == 1)
-            return ['response' => 'isResult', 'data' => null];
-
-        throw new Exception('The request sent was unsuccessful');
-    }
-
-    return [];
-}

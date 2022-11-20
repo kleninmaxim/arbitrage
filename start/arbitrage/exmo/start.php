@@ -12,6 +12,7 @@ $api_keys_exchange = Config::file('keys', $exchange);
 
 $ccxt_exchange = Ccxt::init($exchange, api_key: $api_keys_exchange['api_public'], api_secret: $api_keys_exchange['api_private']);
 
-$ccxt_exchange->cancelAllOrder();
+print_r($ccxt_exchange->cancelAllOrder());
+echo PHP_EOL;
 
 // Clean Memcached

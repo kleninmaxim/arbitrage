@@ -22,7 +22,7 @@ class MySql
     private string $query = '';
     private ?array $execute_array = [];
 
-    public function __construct($config)
+    public function __construct(array $config)
     {
         $this->connection = new PDO(
             'mysql:' . http_build_query($config, '', ';'),
@@ -33,6 +33,12 @@ class MySql
     public static function init(...$parameters): static
     {
         return new static(...$parameters);
+    }
+
+    public function query(string $query): static
+    {
+        $this->query = $query;
+        return $this;
     }
 
     public function insert(string $table, array $columns_values): static

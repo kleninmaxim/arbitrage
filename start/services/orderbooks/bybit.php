@@ -46,10 +46,11 @@ connect(WebsocketDataSpotV3::WEBSOCKET_ENDPOINT)->then(function ($conn) {
                         Log::warning(['message' => 'Unexpected data get from websocket', 'file' => __FILE__, '$data' => $data]);
                 }
 
-                $conn->send(json_encode([
-                    'req_id' => 2,
-                    'op' => 'ping'
-                ]));
+                if (Time::up(5, 'orderbook'))
+                    $conn->send(json_encode([
+                        'req_id' => 2,
+                        'op' => 'ping'
+                    ]));
             } else {
                 echo '[' . date('Y-m-d H:i:s') . '] Websocket mirror_trades get null from onMessage' . PHP_EOL;
                 Log::warning(['message' => 'Websocket mirror_trades get null from onMessage', 'file' => __FILE__]);

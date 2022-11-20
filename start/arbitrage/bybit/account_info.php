@@ -3,6 +3,7 @@
 use Src\Crypto\Exchanges\Original\Bybit\Spot;
 use Src\Support\Config;
 use Src\Support\Log;
+use Src\Support\Time;
 use function Ratchet\Client\connect;
 
 require_once dirname(__DIR__, 3) . '/index.php';
@@ -105,10 +106,11 @@ connect('wss://stream.bybit.com/spot/private/v3')->then(function ($conn) {
                 }
             }
 
-            $conn->send(json_encode([
-                'req_id' => 2,
-                'op' => 'ping'
-            ]));
+            if (Time::up(3, 'orderbook'))
+                $conn->send(json_encode([
+                    'req_id' => 2,
+                    'op' => 'ping'
+                ]));
         } else {
             echo '[' . date('Y-m-d H:i:s') . '] Websocket mirror_trades get null from onMessage' . PHP_EOL;
 

@@ -13,6 +13,7 @@ use Src\Databases\MySqlTables\Trades;
  * @method static mixed get(array $execute_array = null)
  * @method static mixed getAll(array $execute_array = null)
  * @method static mixed column(array $execute_array = null)
+ * @method static mixed keyPair(array $execute_array = null)
  */
 class MySql
 {
@@ -162,6 +163,20 @@ class MySql
         return $this;
     }
 
+    public function orderByDesc(string $field): static
+    {
+        $this->query .= ' ORDER BY ' . $field . ' DESC';
+
+        return $this;
+    }
+
+    public function limit(int $limit): static
+    {
+        $this->query .= ' LIMIT ' . $limit;
+
+        return $this;
+    }
+
     public function getLastInsertId(): static
     {
         $this->query = /** @lang sql */ 'SELECT LAST_INSERT_ID() AS last_id';
@@ -183,7 +198,8 @@ class MySql
         return match($method) {
             'get' => ($this->sth($args))->fetch(),
             'getAll' => ($this->sth($args))->fetchAll(),
-            'column' => ($this->sth($args))->fetchAll(PDO::FETCH_COLUMN)
+            'column' => ($this->sth($args))->fetchAll(PDO::FETCH_COLUMN),
+            'keyPair' => ($this->sth($args))->fetchAll(PDO::FETCH_KEY_PAIR)
         };
     }
 

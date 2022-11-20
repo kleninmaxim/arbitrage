@@ -1,6 +1,6 @@
 <?php
 
-use Src\Crypto\Exchanges\Original\Exmo\WebsocketV1PublicApi;
+use Src\Crypto\Exchanges\Original\Bybit\WebsocketDataSpotV3;
 use Src\Support\Config;
 use Src\Support\Log;
 use Src\Support\Time;
@@ -8,13 +8,13 @@ use function Ratchet\Client\connect;
 
 require_once dirname(__DIR__, 3) . '/index.php';
 
-connect(WebsocketV1PublicApi::WEBSOCKET_ENDPOINT)->then(function ($conn) {
+connect(WebsocketDataSpotV3::WEBSOCKET_ENDPOINT)->then(function ($conn) {
     // ZERO
-    $exmo_websocket = WebsocketV1PublicApi::init();
+    $bybit_websocket = WebsocketDataSpotV3::init();
     // ZERO
 
     // CONFIG
-    $exchange = $exmo_websocket->getName();
+    $exchange = $bybit_websocket->getName();
     $config = Config::file('services_orderbooks', 'watchers')[$exchange];
     $markets = $config['markets'];
     // CONFIG
@@ -24,13 +24,13 @@ connect(WebsocketV1PublicApi::WEBSOCKET_ENDPOINT)->then(function ($conn) {
     // COUNT NECESSARY INFO
 
     // LOGIN AND SUBSCRIBE
-    $conn->send($exmo_websocket->messageRequestToSubscribeOrderbooks($markets));
+    $conn->send($bybit_websocket->messageRequestToSubscribeOrderbooks($markets));
     // LOGIN AND SUBSCRIBE
 
-    $conn->on('message', function ($msg) use ($exmo_websocket, $memcached, $exchange) {
+    $conn->on('message', function ($msg) use ($bybit_websocket, $memcached, $exchange) {
         try {
             if ($msg !== null) {
-                $data = $exmo_websocket->processWebsocketData(json_decode($msg, true));
+                $data = $bybit_websocket->processWebsocketData(json_decode($msg, true));
 
                 if ($data['response'] == 'isOrderbook') {
                     $memcached->set($exchange . '_' . $data['data']['symbol'], $data['data']);
@@ -39,10 +39,8 @@ connect(WebsocketV1PublicApi::WEBSOCKET_ENDPOINT)->then(function ($conn) {
 
                     if (Time::up(60, 'get_orderbook_' . $data['data']['symbol'], true))
                         echo '[' . date('Y-m-d H:i:s') . '] [INFO] Get orderbook: '. $data['data']['symbol'] . PHP_EOL;
-                } elseif ($data['response'] == 'isConnectionEstablished') {
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Connection is established with session id: ' . $data['data']['session_id'] . PHP_EOL;
                 } elseif ($data['response'] == 'isSubscribed') {
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Topic: ' . $data['data']['topic'] . ' is ' . $data['data']['event'] . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Ret Msg: ' . $data['data']['ret_msg'] . ' is ' . ($data['data']['success'] ? 'success' : 'unsuccessful') . PHP_EOL;
                 } else
                     Log::warning(['message' => 'Unexpected data get from websocket', 'file' => __FILE__, '$data' => $data]);
             } else {

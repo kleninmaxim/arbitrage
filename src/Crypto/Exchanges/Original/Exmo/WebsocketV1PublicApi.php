@@ -35,7 +35,6 @@ class WebsocketV1PublicApi extends Exmo implements Websocket, HasWebsocketOrderb
         return WebsocketDataStandard::error();
     }
 
-
     private function isOrderbook($data): array
     {
         if (!empty($data['ts']) && !empty($data['event']) && !empty($data['data']) && !empty($data['topic'] && str_contains($data['topic'], 'spot/order_book_snapshots:'))) {

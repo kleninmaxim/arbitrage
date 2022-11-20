@@ -5,7 +5,7 @@ use Src\Support\Config;
 
 require_once dirname(__DIR__, 3) . '/index.php';
 
-$config = Config::config('arbitrage', 'first');
+$config = Config::config('arbitrage', 'exmo');
 $exchange = $config['exchange'];
 
 $api_keys_exchange = Config::file('keys', $exchange);

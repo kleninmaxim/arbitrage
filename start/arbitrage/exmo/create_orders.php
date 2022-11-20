@@ -12,7 +12,7 @@ if (!isset($argv[1]))
 
 $symbol = $argv[1];
 
-$config = Config::config('arbitrage', 'first');
+$config = Config::config('arbitrage', 'exmo');
 
 $exchange = $config['exchange'];
 $market_discovery = $config['market_discovery'];

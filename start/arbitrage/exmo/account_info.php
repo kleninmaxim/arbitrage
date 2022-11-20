@@ -10,7 +10,7 @@ require_once __DIR__ . '/helper/exmo_functions.php';
 
 connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
     // CONFIG
-    $config = Config::config('arbitrage', 'first');
+    $config = Config::config('arbitrage', 'exmo');
 
     $exchange = $config['exchange'];
     $assets = $config['assets'];

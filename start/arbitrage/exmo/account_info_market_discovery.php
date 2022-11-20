@@ -14,7 +14,7 @@ $exchange = new binance(['apiKey' => $api_keys_market_discovery['api_public'], '
 if ($exchange->has['watchBalance']) {
     $exchange::execute_and_run(function() use ($exchange) {
         // CONFIG
-        $config = Config::config('arbitrage', 'first');
+        $config = Config::config('arbitrage', 'exmo');
 
         $market_discovery = $config['market_discovery'];
         $assets = $config['assets'];

@@ -35,3 +35,6 @@ CREATE DATABASE learn CHARACTER SET utf8;
 CREATE USER 'student'@'%' IDENTIFIED BY 'STUDENT';
 GRANT ALL PRIVILEGES ON learn.* TO 'student'@'%' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
+
+git clone git@github.com:kleninmaxim/arbitrage.git && cd arbitrage/
+composer install

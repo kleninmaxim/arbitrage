@@ -11,9 +11,9 @@ class Bybit
 
     }
 
-    public static function init(): static
+    public static function init(...$parameters): static
     {
-        return new static();
+        return new static(...$parameters);
     }
 
     public function getName(): string

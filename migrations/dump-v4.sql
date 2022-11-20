@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.21, for Win64 (x86_64)
 --
--- Host: 127.0.0.1    Database: arbitrage
+-- Host: 127.0.0.1    Database: learn
 -- ------------------------------------------------------
 -- Server version	8.0.31-0ubuntu0.20.04.1
 
@@ -19,8 +19,6 @@
 -- Table structure for table `balances`
 --
 
-NOT ACTUAL!!!!!!!!! BE CAREFULL!
-
 DROP TABLE IF EXISTS `balances`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -38,15 +36,6 @@ CREATE TABLE `balances` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `balances`
---
-
-LOCK TABLES `balances` WRITE;
-/*!40000 ALTER TABLE `balances` DISABLE KEYS */;
-/*!40000 ALTER TABLE `balances` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `exchanges`
 --
 
@@ -58,18 +47,8 @@ CREATE TABLE `exchanges` (
   `exchange` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `exchanges`
---
-
-LOCK TABLES `exchanges` WRITE;
-/*!40000 ALTER TABLE `exchanges` DISABLE KEYS */;
-INSERT INTO `exchanges` VALUES (1,'binance'),(2,'exmo');
-/*!40000 ALTER TABLE `exchanges` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `mirror_trades`
@@ -87,15 +66,6 @@ CREATE TABLE `mirror_trades` (
   CONSTRAINT `fx_mirror_trades_trade_id` FOREIGN KEY (`trade_id`) REFERENCES `trades` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `mirror_trades`
---
-
-LOCK TABLES `mirror_trades` WRITE;
-/*!40000 ALTER TABLE `mirror_trades` DISABLE KEYS */;
-/*!40000 ALTER TABLE `mirror_trades` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `orders`
@@ -122,17 +92,8 @@ CREATE TABLE `orders` (
   UNIQUE KEY `fx_orders_order_id_exchange_id` (`order_id`,`exchange_id`),
   KEY `fx_orders_exchanges_idx` (`exchange_id`),
   CONSTRAINT `fx_orders_exchanges` FOREIGN KEY (`exchange_id`) REFERENCES `exchanges` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=533 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `orders`
---
-
-LOCK TABLES `orders` WRITE;
-/*!40000 ALTER TABLE `orders` DISABLE KEYS */;
-/*!40000 ALTER TABLE `orders` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `trades`
@@ -161,24 +122,15 @@ CREATE TABLE `trades` (
   UNIQUE KEY `fx_trades_trade_id_order_id` (`trade_id`,`order_id`,`exchange_id`),
   KEY `fx_trades_exchanges_idx` (`exchange_id`),
   CONSTRAINT `fx_trades_exchanges` FOREIGN KEY (`exchange_id`) REFERENCES `exchanges` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `trades`
---
-
-LOCK TABLES `trades` WRITE;
-/*!40000 ALTER TABLE `trades` DISABLE KEYS */;
-/*!40000 ALTER TABLE `trades` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Dumping events for database 'arbitrage'
+-- Dumping events for database 'learn'
 --
 
 --
--- Dumping routines for database 'arbitrage'
+-- Dumping routines for database 'learn'
 --
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -190,4 +142,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-11-18 15:06:34
+-- Dump completed on 2022-11-20 21:54:55

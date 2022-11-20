@@ -6,7 +6,7 @@ use Src\Support\Math;
 
 require_once dirname(__DIR__, 2) . '/index.php';
 
-$db = MySql::init(Config::config('db', 'mysql', 'do-neuron-letit'));
+$db = MySql::init(Config::config('db', 'mysql', 'localhost'));
 
 $data = $db->query(/** @lang sql */ '
     SELECT 

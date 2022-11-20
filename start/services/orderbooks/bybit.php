@@ -27,20 +27,29 @@ connect(WebsocketDataSpotV3::WEBSOCKET_ENDPOINT)->then(function ($conn) {
     $conn->send($bybit_websocket->messageRequestToSubscribeOrderbooks($markets));
     // LOGIN AND SUBSCRIBE
 
-    $conn->on('message', function ($msg) use ($bybit_websocket, $memcached, $exchange) {
+    $conn->on('message', function ($msg) use (&$conn, $bybit_websocket, $memcached, $exchange) {
         try {
             if ($msg !== null) {
-                $data = $bybit_websocket->processWebsocketData(json_decode($msg, true));
+                $jsn_data = json_decode($msg, true);
 
-                if ($data['response'] == 'isOrderbook') {
-                    $memcached->set($exchange . '_' . $data['data']['symbol'], $data['data']);
+                if (!isset($jsn_data['op']) || $jsn_data['op'] != 'pong') {
+                    $data = $bybit_websocket->processWebsocketData(json_decode($msg, true));
 
-                    if (Time::up(60, 'get_orderbook_' . $data['data']['symbol'], true))
-                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Get orderbook: '. $data['data']['symbol'] . PHP_EOL;
-                } elseif ($data['response'] == 'isSubscribed') {
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Ret Msg: ' . $data['data']['ret_msg'] . ' is ' . ($data['data']['success'] ? 'success' : 'unsuccessful') . PHP_EOL;
-                } else
-                    Log::warning(['message' => 'Unexpected data get from websocket', 'file' => __FILE__, '$data' => $data]);
+                    if ($data['response'] == 'isOrderbook') {
+                        $memcached->set($exchange . '_' . $data['data']['symbol'], $data['data']);
+
+                        if (Time::up(60, 'get_orderbook_' . $data['data']['symbol'], true))
+                            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Get orderbook: '. $data['data']['symbol'] . PHP_EOL;
+                    } elseif ($data['response'] == 'isSubscribed') {
+                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Ret Msg: ' . $data['data']['ret_msg'] . ' is ' . ($data['data']['success'] ? 'success' : 'unsuccessful') . PHP_EOL;
+                    } else
+                        Log::warning(['message' => 'Unexpected data get from websocket', 'file' => __FILE__, '$data' => $data]);
+                }
+
+                $conn->send(json_encode([
+                    'req_id' => 2,
+                    'op' => 'ping'
+                ]));
             } else {
                 echo '[' . date('Y-m-d H:i:s') . '] Websocket mirror_trades get null from onMessage' . PHP_EOL;
                 Log::warning(['message' => 'Websocket mirror_trades get null from onMessage', 'file' => __FILE__]);

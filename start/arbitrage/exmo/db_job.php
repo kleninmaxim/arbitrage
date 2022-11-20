@@ -12,12 +12,12 @@ $db = MySql::init(Config::file('db', 'mysql'));
 while (true) {
     usleep(1000);
 
-    if ($balances = $redis->get('exmo_balances')) {
+    if ($balances = $redis->get('balances')) {
         $db->replaceBalances($balances['exchange'], $balances['asset'], $balances['balance'])->execute();
         echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balance update: ' . $balances['exchange'] . ', ' . $balances['asset'] . ', free: ' . $balances['balance']['free'] . ', used: ' . $balances['balance']['used'] . ', total: ' . $balances['balance']['total'] . PHP_EOL;
     }
 
-    if ($order = $redis->get('exmo_orders')) {
+    if ($order = $redis->get('orders')) {
         $db->insertOrUpdateOrders(
             $order['exchange'],
             $order['id'],
@@ -34,7 +34,7 @@ while (true) {
         echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order update: ' . $order['exchange'] . ', ' . $order['id'] . ', ' . $order['symbol'] . ', ' . $order['side'] . ', ' . $order['price'] . ', ' . $order['amount'] . ', ' . $order['status'] . PHP_EOL;
     }
 
-    if ($mirror_order_and_trade = $redis->get('exmo_mirror_order_and_trade')) {
+    if ($mirror_order_and_trade = $redis->get('mirror_order_and_trade')) {
         [$trade, $order] = [$mirror_order_and_trade['trade'], $mirror_order_and_trade['order']];
 
         $db->insertTrades(
@@ -82,7 +82,7 @@ while (true) {
     }
 
     if (Time::up(60, 'db_job_len', true))
-        echo '[' . date('Y-m-d H:i:s') . '] [INFO] exmo_balances: ' . $redis->getLen('exmo_balances') . ', exmo_orders: ' . $redis->getLen('exmo_orders') . ', exmo_mirror_order_and_trade: ' . $redis->getLen('exmo_mirror_order_and_trade') . PHP_EOL;
+        echo '[' . date('Y-m-d H:i:s') . '] [INFO] balances: ' . $redis->getLen('balances') . ', orders: ' . $redis->getLen('orders') . ', mirror_order_and_trade: ' . $redis->getLen('mirror_order_and_trade') . PHP_EOL;
 }
 
 /*

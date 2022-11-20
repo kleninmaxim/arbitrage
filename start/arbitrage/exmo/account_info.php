@@ -64,7 +64,7 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
                 foreach ($data['data'] as $asset => $balance) {
                     $account_info['data']['balances'][$asset] = $balance;
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balance update: ' . $asset . ', free: ' . $balance['free'] . ', used: ' . $balance['used'] . ', total: ' . $balance['total'] . PHP_EOL;
-                    $redis->queue('exmo_balances', ['exchange' => $exchange, 'asset' => $asset, 'balance' => $balance]);
+                    $redis->queue('balances', ['exchange' => $exchange, 'asset' => $asset, 'balance' => $balance]);
                 }
 
                 // END COUNTING
@@ -90,7 +90,7 @@ connect('wss://ws-api.exmo.com:443/v1/private')->then(function ($conn) {
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order update: ' . $order['id'] . ', ' . $order['symbol'] . ', ' . $order['side'] . ', ' . $order['price'] . ', ' . $order['amount'] . ', ' . $order['status'] . PHP_EOL;
 
                     $order['exchange'] = $exchange;
-                    $redis->queue('exmo_orders', $order);
+                    $redis->queue('orders', $order);
                 }
             } elseif ($data['response'] == 'isConnectionEstablished') {
                 echo '[' . date('Y-m-d H:i:s') . '] [INFO] Connection is established with session id: ' . $data['data']['session_id'] . PHP_EOL;

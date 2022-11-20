@@ -110,8 +110,6 @@ function isUpdateSpotUserTrades($data, $markets): array
         if (count($data['data']) > 1)
             Log::warning(['file' => __FILE__, 'message' => 'get bybit more than one message in websocket isUpdateSpotUserTrades', '$data' => $data]);
 
-        $timestamp_in_seconds = floor($data['data'][0]['E'] / 1000);
-
         return [
             'response' => 'isUpdateSpotUserTrades',
             'data' => [
@@ -123,8 +121,8 @@ function isUpdateSpotUserTrades($data, $markets): array
                 'price' => $data['data'][0]['p'],
                 'amount' => $data['data'][0]['q'],
                 'quote' => round($data['data'][0]['p'] * $data['data'][0]['q'], 8),
-                'timestamp' => $timestamp_in_seconds,
-                'datetime' => date('Y--m-d H:i:s', $timestamp_in_seconds),
+                'timestamp' => $data['data'][0]['E'] / 1000,
+                'datetime' => date('Y--m-d H:i:s', floor($data['data'][0]['E'] / 1000)),
                 'fee' => [
                     'amount' => null,
                     'asset' => null

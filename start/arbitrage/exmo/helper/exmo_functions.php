@@ -92,8 +92,6 @@ function isUpdateOrSnapshotOrders($data, $markets): array
         }
 
         if ($data['event'] == 'update') {
-            $timestamp_in_seconds = floor($data['ts'] / 1000);
-
             return [
                 'response' => 'isUpdateOrSnapshotOrders',
                 'data' => [
@@ -105,8 +103,8 @@ function isUpdateOrSnapshotOrders($data, $markets): array
                     'quote' => $data['data']['original_amount'],
                     'status' => $data['data']['status'],
                     'filled' => round($data['data']['original_quantity'] - $data['data']['quantity'], 8),
-                    'timestamp' => $timestamp_in_seconds,
-                    'datetime' => date('Y--m-d H:i:s', $timestamp_in_seconds)
+                    'timestamp' => $data['ts'] / 1000,
+                    'datetime' => date('Y--m-d H:i:s', floor($data['ts'] / 1000))
                 ]
             ];
         }

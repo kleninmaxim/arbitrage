@@ -92,7 +92,7 @@ class Spot extends Bybit
                 'status' => 'open',
                 'filled' => null,
                 'timestamp' => $timestamp_in_seconds,
-                'datetime' => date('Y--m-d H:i:s', $timestamp_in_seconds)
+                'datetime' => date('Y-m-d H:i:s', $timestamp_in_seconds)
             ];
         }
         Log::warning(['file' => __FILE__, '$order' => $order]);

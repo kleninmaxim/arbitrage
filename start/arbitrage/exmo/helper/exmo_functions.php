@@ -104,7 +104,7 @@ function isUpdateOrSnapshotOrders($data, $markets): array
                     'status' => $data['data']['status'],
                     'filled' => round($data['data']['original_quantity'] - $data['data']['quantity'], 8),
                     'timestamp' => $data['ts'] / 1000,
-                    'datetime' => date('Y--m-d H:i:s', floor($data['ts'] / 1000))
+                    'datetime' => date('Y-m-d H:i:s', floor($data['ts'] / 1000))
                 ]
             ];
         }
@@ -137,7 +137,7 @@ function isUpdateSpotUserTrades($data, $markets): array
                 'amount' => $data['data']['quantity'],
                 'quote' => $data['data']['amount'],
                 'timestamp' => $timestamp_in_seconds,
-                'datetime' => date('Y--m-d H:i:s', $timestamp_in_seconds),
+                'datetime' => date('Y-m-d H:i:s', $timestamp_in_seconds),
                 'fee' => [
                     'amount' => $data['data']['commission_amount'],
                     'asset' => $data['data']['commission_currency']

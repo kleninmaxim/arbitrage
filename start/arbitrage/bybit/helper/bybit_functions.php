@@ -89,7 +89,7 @@ function isUpdateOrSnapshotOrders($data, $markets): array
                 'status' => ($status == 'new' || $status == 'partially_filled') ? 'open' : $status,
                 'filled' => $data['data'][0]['z'],
                 'timestamp' => $timestamp_in_seconds,
-                'datetime' => date('Y--m-d H:i:s', $timestamp_in_seconds)
+                'datetime' => date('Y-m-d H:i:s', $timestamp_in_seconds)
             ]
         ];
     }
@@ -122,7 +122,7 @@ function isUpdateSpotUserTrades($data, $markets): array
                 'amount' => $data['data'][0]['q'],
                 'quote' => round($data['data'][0]['p'] * $data['data'][0]['q'], 8),
                 'timestamp' => $data['data'][0]['E'] / 1000,
-                'datetime' => date('Y--m-d H:i:s', floor($data['data'][0]['E'] / 1000)),
+                'datetime' => date('Y-m-d H:i:s', floor($data['data'][0]['E'] / 1000)),
                 'fee' => [
                     'amount' => null,
                     'asset' => null

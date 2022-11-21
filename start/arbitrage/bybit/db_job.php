@@ -17,9 +17,9 @@ while (true) {
         try {
             $db->replaceBalances($balances['exchange'], $balances['asset'], $balances['balance'])->execute();
 
-            $balances = $db->query(/** @lang sql */ 'SELECT asset, SUM(total) total FROM balances GROUP BY asset')->keyPair();
+            $db_balances = $db->query(/** @lang sql */ 'SELECT asset, SUM(total) total FROM balances GROUP BY asset')->keyPair();
             $max_group_id = $db->select('balances_history', ['group_id'])->orderByDesc('group_id')->limit(1)->get();
-            foreach ($balances as $asset => $balance)
+            foreach ($db_balances as $asset => $balance)
                 $db->insert('balances_history', ['group_id' => (!empty($max_group_id['group_id'])) ? $max_group_id['group_id'] + 1 : 1, 'asset' => $asset, 'balance' => round($balance, 8)])->execute();
         } catch (Exception $e) {
             Log::error($e, ['$balances' => $balances]);

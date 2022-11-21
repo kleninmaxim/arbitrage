@@ -65,11 +65,23 @@ while (true) {
                         !isOrderInRange($limit_exchange_sell_order, $imitation_market_order) ||
                         (microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > $order_lifetime
                     ) {
+                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Start cancel order: ' . $limit_exchange_sell_order['info']['id'] . ', Imitation price: ' . ($imitation_market_order['price'] ?? 'no imitation price') . PHP_EOL;
                         if (Time::up(1, $limit_exchange_sell_order['info']['id'], true)) {
-                            $ccxt_exchange->cancelOrder($limit_exchange_sell_order['info']['id'], $symbol);
-                            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_sell_order['info']['id'] . PHP_EOL;
+                            $ccxt_exchange->cancelOrder($limit_exchange_sell_order['info']['id']);
+
+                            if (empty($orderbooks[$market_discovery][$symbol])) {
+                                $cancel_message = 'empty orderbook';
+                            } elseif (empty($imitation_market_order)) {
+                                $cancel_message = 'no imitation price';
+                            } elseif (!isOrderInRange($limit_exchange_sell_order, $imitation_market_order)) {
+                                $cancel_message = 'range out';
+                            } elseif ((microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > $order_lifetime) {
+                                $cancel_message = 'expired time';
+                            } else {
+                                $cancel_message = ' no reason';
+                            }
+                            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_sell_order['info']['id'] . ', Reason: ' . $cancel_message . PHP_EOL;
                         }
-                        unset($limit_exchange_sell_order);
                     }
                 } elseif ((microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > 2)
                     unset($limit_exchange_sell_order);
@@ -170,9 +182,22 @@ while (true) {
                         !isOrderInRange($limit_exchange_buy_order, $imitation_market_order) ||
                         (microtime(true) - $limit_exchange_buy_order['info']['timestamp']) > $order_lifetime
                     ) {
+                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Start cancel order: ' . $limit_exchange_buy_order['info']['id'] . ', Imitation price: ' . ($imitation_market_order['price'] ?? 'no imitation price') . PHP_EOL;
                         if (Time::up(1, $limit_exchange_buy_order['info']['id'], true)) {
-                            $ccxt_exchange->cancelOrder($limit_exchange_buy_order['info']['id'], $symbol);
-                            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_buy_order['info']['id'] . PHP_EOL;
+                            $ccxt_exchange->cancelOrder($limit_exchange_buy_order['info']['id']);
+
+                            if (empty($orderbooks[$market_discovery][$symbol])) {
+                                $cancel_message = 'empty orderbook';
+                            } elseif (empty($imitation_market_order)) {
+                                $cancel_message = 'no imitation price';
+                            } elseif (!isOrderInRange($limit_exchange_sell_order, $imitation_market_order)) {
+                                $cancel_message = 'range out';
+                            } elseif ((microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > $order_lifetime) {
+                                $cancel_message = 'expired time';
+                            } else {
+                                $cancel_message = ' no reason';
+                            }
+                            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_buy_order['info']['id'] . ', Reason: ' . $cancel_message . PHP_EOL;
                         }
                         unset($limit_exchange_buy_order);
                     }

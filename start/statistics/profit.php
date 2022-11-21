@@ -6,6 +6,9 @@ use Src\Support\Math;
 
 require_once dirname(__DIR__, 2) . '/index.php';
 
+if (isset($argv[1]))
+    $echo_full = (bool) $argv[1];
+
 $db = MySql::init(Config::config('db', 'mysql', 'localhost'));
 
 $data = $db->query(/** @lang sql */ '
@@ -63,12 +66,38 @@ foreach ($mirror_trades as $mirror_trade) {
     if (Math::compareFloats($mirror_trade['sell']['amount'], $mirror_trade['buy']['amount']))
         $mes = ' Quote: ' . round($mirror_trade['sell']['quote'] - $mirror_trade['buy']['quote'], 8);
     $price = round($mirror_trade['sell']['price'] - $mirror_trade['buy']['price'], 8);
-    echo '[' . date('Y-m-d H:i:s') . '] Price: ' . $price . ' Time: ' . abs(round($mirror_trade['sell']['timestamp'] - $mirror_trade['buy']['timestamp'], 4)) . $mes . PHP_EOL;
 
-    if ($price < 0)
-        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] ' . print_r($mirror_trade, true) . PHP_EOL;
+    if (isset($echo_full) && $echo_full) {
+        echo '[' . date('Y-m-d H:i:s') . '] Price: ' . $price . ' Time: ' . abs(round($mirror_trade['sell']['timestamp'] - $mirror_trade['buy']['timestamp'], 4)) . $mes . PHP_EOL;
+        if ($price < 0)
+            echo '[' . date('Y-m-d H:i:s') . '] [WARNING] ' . print_r($mirror_trade, true) . PHP_EOL;
+    }
 
     $sum_price += $price;
 }
 
 echo '[' . date('Y-m-d H:i:s') . '] SUM: ' . $sum_price . PHP_EOL;
+
+$min_and_max = $db->query(/** @lang sql */ '
+    SELECT MIN(group_id) min, MAX(group_id) max FROM balances_history;
+')->get();
+
+[$min, $max] = [$min_and_max['min'], $min_and_max['max']];
+
+if ($min && $max) {
+    $start_balance_history = $db->select('balances_history', ['asset', 'balance'])->where(['group_id', '=', $min])->keyPair();
+    $end_balance_history = $db->select('balances_history', ['asset', 'balance'])->where(['group_id', '=', $max])->keyPair();
+
+    $msg = '';
+    foreach ($end_balance_history as $asset => $amount) {
+        if (!empty($start_balance_history[$asset])) {
+            $msg .= $asset . ': ' . rtrim(sprintf("%.8f", round($amount - $start_balance_history[$asset], 8)), '0') . ' ';
+        } else {
+            echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Empty: ' . $asset . PHP_EOL;
+        }
+    }
+
+    echo '[' . date('Y-m-d H:i:s') . '] Real profit: ' . $msg . PHP_EOL;
+} else {
+    echo '[' . date('Y-m-d H:i:s') . '] Real profit: 0' . PHP_EOL;
+}

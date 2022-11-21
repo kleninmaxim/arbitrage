@@ -5,6 +5,7 @@ use Src\Crypto\Exchanges\Original\Bybit\Spot;
 use Src\Support\Config;
 use Src\Support\Log;
 use Src\Support\Math;
+use Src\Support\Time;
 use function Ratchet\Client\connect;
 
 require_once dirname(__DIR__, 3) . '/index.php';
@@ -24,7 +25,7 @@ connect('wss://stream.bybit.com/spot/private/v3')->then(function ($conn) {
 
     // API KEYS
     $api_keys_exchange = Config::file('keys', $exchange);
-    $api_keys_market_discovery = Config::config('keys', $market_discovery, 'main');
+    $api_keys_market_discovery = Config::file('keys', $market_discovery);
     // API KEYS
 
     // CCXT
@@ -36,7 +37,14 @@ connect('wss://stream.bybit.com/spot/private/v3')->then(function ($conn) {
     $memcached = \Src\Databases\Memcached::init();
     $redis = \Src\Databases\Redis::init();
     $markets = $ccxt_exchange->getMarketsWithOrigin();
+    $balances = $ccxt_exchange->getBalances($assets);
+    $memcached->set('accountInfo_' . $exchange, ['balances' => $balances]);
     // COUNT NECESSARY INFO
+
+    foreach ($balances as $asset => $balance) {
+        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balance update: ' . $asset . ', free: ' . $balance['free'] . ', used: ' . $balance['used'] . ', total: ' . $balance['total'] . PHP_EOL;
+        $redis->queue('balances', ['exchange' => $exchange, 'asset' => $asset, 'balance' => $balance]);
+    }
 
     // LOGIN AND SUBSCRIBE
     $expires = (time() + 3) * 1000;
@@ -44,19 +52,20 @@ connect('wss://stream.bybit.com/spot/private/v3')->then(function ($conn) {
         'op' => 'auth',
         'args' => [$api_keys_exchange['api_public'], $expires, generateSignature($api_keys_exchange['api_private'], $expires)]
     ]));
+
     $conn->send(json_encode([
         'req_id' => 1,
         'op' => 'subscribe',
-        'args' => ['ticketInfo']
+        'args' => ['outboundAccountInfo', 'order', 'ticketInfo']
     ]));
     // LOGIN AND SUBSCRIBE
 
-    $conn->on('message', function ($msg) use (&$conn, $memcached, $redis, $ccxt_market_discovery, $exchange, $min_deal_amount, $markets, $info_of_markets) {
+    $conn->on('message', function ($msg) use (&$conn, $memcached, $redis, $ccxt_market_discovery, $exchange, $assets, $min_deal_amount, $markets, $info_of_markets) {
         if ($msg !== null) {
             $jsn_data = json_decode($msg, true);
 
             if (!isset($jsn_data['op']) || $jsn_data['op'] != 'pong') {
-                $data = processWebsocketData(json_decode($msg, true), ['markets' => $markets]);
+                $data = processWebsocketData(json_decode($msg, true), ['markets' => $markets, 'assets' => $assets]);
 
                 if ($data['response'] == 'isUpdateSpotUserTrades') {
                     // TRADES RESULT
@@ -125,6 +134,43 @@ connect('wss://stream.bybit.com/spot/private/v3')->then(function ($conn) {
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Trade was: ' . $symbol . ', ' . $data['data']['trade_type'] . ', ' . $data['data']['side'] . ', ' . $price . ', ' . $data['data']['amount'] . PHP_EOL;
                     echo '[' . date('Y-m-d H:i:s') . '] [END] --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------' . PHP_EOL;
                     // END COUNTING
+                } elseif ($data['response'] == 'isUpdateOrSnapshotSpotUserWallet') {
+                    // PRE COUNT
+                    $memcached_key = 'accountInfo_' . $exchange;
+                    $account_info = $memcached->get($memcached_key) ?: ['data' => ['balances' => []]];
+                    // PRE COUNT
+
+                    foreach ($data['data'] as $asset => $balance) {
+                        $account_info['data']['balances'][$asset] = $balance;
+                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balance update: ' . $asset . ', free: ' . $balance['free'] . ', used: ' . $balance['used'] . ', total: ' . $balance['total'] . PHP_EOL;
+                        $redis->queue('balances', ['exchange' => $exchange, 'asset' => $asset, 'balance' => $balance]);
+                    }
+
+                    // END COUNTING
+                    $memcached->set($memcached_key, $account_info['data']);
+                    // END COUNTING
+                } elseif ($data['response'] == 'isUpdateOrSnapshotOrders') {
+                    if ($order = $data['data']) {
+                        // PRE COUNT
+                        $memcached_key = 'accountInfo_' . $exchange;
+                        $account_info = $memcached->get($memcached_key) ?: ['data' => ['open_orders' => []]];
+                        // PRE COUNT
+
+                        if ($order['status'] == 'open') {
+                            $account_info['data']['open_orders'][$order['id']] = $order;
+                        } else {
+                            unset($account_info['data']['open_orders'][$order['id']]);
+                        }
+
+                        // END COUNTING
+                        $memcached->set($memcached_key, $account_info['data']);
+                        // END COUNTING
+
+                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order update: ' . $order['id'] . ', ' . $order['symbol'] . ', ' . $order['side'] . ', ' . $order['price'] . ', ' . $order['amount'] . ', ' . $order['status'] . PHP_EOL;
+
+                        $order['exchange'] = $exchange;
+                        $redis->queue('orders', $order);
+                    }
                 } elseif ($data['response'] == 'isLoggedIn') {
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Successful logged in ' . $data['data']['conn_id']. PHP_EOL;
                 } elseif ($data['response'] == 'isSubscribed') {
@@ -134,10 +180,11 @@ connect('wss://stream.bybit.com/spot/private/v3')->then(function ($conn) {
                 }
             }
 
-            $conn->send(json_encode([
-                'req_id' => 2,
-                'op' => 'ping'
-            ]));
+            if (Time::up(5, 'orderbook'))
+                $conn->send(json_encode([
+                    'req_id' => 2,
+                    'op' => 'ping'
+                ]));
         } else {
             echo '[' . date('Y-m-d H:i:s') . '] Websocket mirror_trades get null from onMessage' . PHP_EOL;
 
@@ -147,6 +194,7 @@ connect('wss://stream.bybit.com/spot/private/v3')->then(function ($conn) {
 
     $conn->on('close', function($code = null, $reason = null) {
         echo '[' . date('Y-m-d H:i:s') . '] Connection closed. Code: ' . $code . '; Reason: ' . $reason . PHP_EOL;
+        throw new Exception('[' . date('Y-m-d H:i:s') . '] Connection closed. Code: ' . $code . '; Reason: ' . $reason);
     });
 }, function (Exception $e) {
     echo "Could not connect: {$e->getMessage()}" . PHP_EOL;

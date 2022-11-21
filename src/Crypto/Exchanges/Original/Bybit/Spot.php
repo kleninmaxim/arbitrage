@@ -2,7 +2,6 @@
 
 namespace Src\Crypto\Exchanges\Original\Bybit;
 
-
 use Exception;
 use Src\Support\Http;
 use Src\Support\Log;
@@ -119,7 +118,7 @@ class Spot extends Bybit
 
     protected function request(string $method, string $url, array $query = [], array $header = []): array
     {
-        return Http::$method($url, $query, $header);
+        return Http::$method($url, $query, $header) ?? [];
     }
 
     private function sendPrivateRequest(string $method, string $url, array $get_params = []): array

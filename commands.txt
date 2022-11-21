@@ -15,9 +15,7 @@ press: f6
 type: ;error_log = php_errors.log
 set directory. As example: /home/ubuntu/logs/php_errors.log
 
-sudo apt install memcached libmemcached-tools -y
-
-sudo apt install redis-server -y && sudo apt install redis-tools && sudo systemctl restart redis
+sudo apt install memcached libmemcached-tools -y && sudo apt install redis-server -y && sudo apt install redis-tools && sudo systemctl restart redis
 
 curl -fsSL https://deb.nodesource.com/setup_19.x | sudo -E bash -
 sudo apt-get update && sudo apt autoremove -y && sudo apt-get install -y nodejs && sudo npm install pm2 -g

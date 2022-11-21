@@ -34,8 +34,6 @@ connect(WebsocketV1PublicApi::WEBSOCKET_ENDPOINT)->then(function ($conn) {
 
                 if ($data['response'] == 'isOrderbook') {
                     $memcached->set($exchange . '_' . $data['data']['symbol'], $data['data']);
-                    print_r($data['data']);
-                    echo PHP_EOL;
 
                     if (Time::up(60, 'get_orderbook_' . $data['data']['symbol'], true))
                         echo '[' . date('Y-m-d H:i:s') . '] [INFO] Get orderbook: '. $data['data']['symbol'] . PHP_EOL;

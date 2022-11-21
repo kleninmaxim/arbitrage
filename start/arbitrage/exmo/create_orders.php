@@ -22,6 +22,7 @@ $min_deal_amount = $config['min_deal_amount'];
 $price_margin = $config['price_margin'];
 $order_lifetime = $config['order_lifetime'];
 $create_order_latency = $config['create_order_latency'];
+$limitation_in_quote_asset = $config['limitation_in_quote_asset'];
 $profits = $config['profits'];
 $fees = $config['fees'];
 $use_markets = $config['use_markets'];
@@ -95,7 +96,7 @@ while (true) {
                                 $balances[$market_discovery][$quote_asset]['total'] -= $mirror_trades_info[$symbol]['buy'] * $prices[$symbol]['sell'];
                             }
 
-                            $positions = getPositions($balances, $prices, $exchange, $market_discovery, $quote_asset, $use_markets);
+                            $positions = getPositions($balances, $prices, $exchange, $market_discovery, $quote_asset, $use_markets, $limitation_in_quote_asset);
 
                             $counting_sell = exchangeSellMarketDiscoveryBuy(
                                 $orderbooks[$market_discovery][$symbol],
@@ -200,7 +201,7 @@ while (true) {
                                 $balances[$market_discovery][$quote_asset]['total'] -= $mirror_trades_info[$symbol]['sell'];
                             }
 
-                            $positions = getPositions($balances, $prices, $exchange, $market_discovery, $quote_asset, $use_markets);
+                            $positions = getPositions($balances, $prices, $exchange, $market_discovery, $quote_asset, $use_markets, $limitation_in_quote_asset);
 
                             $counting_buy = exchangeBuyMarketDiscoverySell(
                                 $orderbooks[$market_discovery][$symbol],

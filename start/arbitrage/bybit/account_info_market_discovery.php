@@ -11,7 +11,7 @@ $config = Config::config('arbitrage', 'bybit');
 
 $market_discovery = $config['market_discovery'];
 
-$api_keys_market_discovery = Config::config('keys', $market_discovery);
+$api_keys_market_discovery = Config::file('keys', $market_discovery);
 
 $exchange = new binance(['apiKey' => $api_keys_market_discovery['api_public'], 'secret' => $api_keys_market_discovery['api_private'], 'enableRateLimit' => false]);
 

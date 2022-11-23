@@ -45,119 +45,124 @@ while (true) {
     usleep($usleep);
 
     if ($data = $memcached->get($keys)) {
-        list($orderbooks, $account_info, $mirror_trades_info) = formatMemcachedData($data);
+        list($orderbooks, $account_info, $mirror_trades_info, $is_good_arbitrage) = formatMemcachedData($data);
 
-        $open_orders = array_filter($account_info[$exchange]['open_orders'], fn($open_order) => $open_order['symbol'] == $symbol && $open_order['side'] == 'sell');
+        if ($is_good_arbitrage) {
+            $open_orders = array_filter($account_info[$exchange]['open_orders'], fn($open_order) => $open_order['symbol'] == $symbol && $open_order['side'] == 'sell');
 
-        if (count($open_orders) > 1) {
-            foreach ($open_orders as $open_order) {
-                if (Time::up(1, $open_order['id'], true)) {
-                    $ccxt_exchange->cancelOrder($open_order['id']);
-                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Cancel order before counting because open orders more than one: ' . $open_order['id'] . PHP_EOL;
+            if (count($open_orders) > 1) {
+                foreach ($open_orders as $open_order) {
+                    if (Time::up(1, $open_order['id'], true)) {
+                        $ccxt_exchange->cancelOrder($open_order['id']);
+                        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Cancel order before counting because open orders more than one: ' . $open_order['id'] . PHP_EOL;
+                    }
                 }
-            }
-            unset($limit_exchange_sell_order);
-        } else {
-            if (isset($limit_exchange_sell_order)) {
-                if (count(array_filter($open_orders, fn($open_order) => $open_order['id'] == $limit_exchange_sell_order['info']['id'])) == 1) {
-                    if (
-                        empty($orderbooks[$market_discovery][$symbol]) ||
-                        !($imitation_market_order = imitationMarketOrderBuy($orderbooks[$market_discovery][$symbol], $limit_exchange_sell_order['counting']['market_discovery']['amount']['dirty'], $price_increment)) ||
-                        !isOrderInRange($limit_exchange_sell_order, $imitation_market_order) ||
-                        (microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > $order_lifetime
-                    ) {
-                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Start cancel order: ' . $limit_exchange_sell_order['info']['id'] . ', Imitation price: ' . ($imitation_market_order['price'] ?? 'no imitation price') . PHP_EOL;
-                        if (Time::up(1, $limit_exchange_sell_order['info']['id'], true)) {
-                            $ccxt_exchange->cancelOrder($limit_exchange_sell_order['info']['id']);
+                unset($limit_exchange_sell_order);
+            } else {
+                if (isset($limit_exchange_sell_order)) {
+                    if (count(array_filter($open_orders, fn($open_order) => $open_order['id'] == $limit_exchange_sell_order['info']['id'])) == 1) {
+                        if (
+                            empty($orderbooks[$market_discovery][$symbol]) ||
+                            !($imitation_market_order = imitationMarketOrderBuy($orderbooks[$market_discovery][$symbol], $limit_exchange_sell_order['counting']['market_discovery']['amount']['dirty'], $price_increment)) ||
+                            !isOrderInRange($limit_exchange_sell_order, $imitation_market_order) ||
+                            (microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > $order_lifetime
+                        ) {
+                            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Start cancel order: ' . $limit_exchange_sell_order['info']['id'] . ', Imitation price: ' . ($imitation_market_order['price'] ?? 'no imitation price') . PHP_EOL;
+                            if (Time::up(1, $limit_exchange_sell_order['info']['id'], true)) {
+                                $ccxt_exchange->cancelOrder($limit_exchange_sell_order['info']['id']);
 
-                            if (empty($orderbooks[$market_discovery][$symbol])) {
-                                $cancel_message = 'empty orderbook';
-                            } elseif (empty($imitation_market_order)) {
-                                $cancel_message = 'no imitation price';
-                            } elseif (!isOrderInRange($limit_exchange_sell_order, $imitation_market_order)) {
-                                $cancel_message = 'range out';
-                            } elseif ((microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > $order_lifetime) {
-                                $cancel_message = 'expired time';
-                            } else {
-                                $cancel_message = ' no reason';
+                                if (empty($orderbooks[$market_discovery][$symbol])) {
+                                    $cancel_message = 'empty orderbook';
+                                } elseif (empty($imitation_market_order)) {
+                                    $cancel_message = 'no imitation price';
+                                } elseif (!isOrderInRange($limit_exchange_sell_order, $imitation_market_order)) {
+                                    $cancel_message = 'range out';
+                                } elseif ((microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > $order_lifetime) {
+                                    $cancel_message = 'expired time';
+                                } else {
+                                    $cancel_message = ' no reason';
+                                }
+                                echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_sell_order['info']['id'] . ', Reason: ' . $cancel_message . PHP_EOL;
                             }
-                            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_sell_order['info']['id'] . ', Reason: ' . $cancel_message . PHP_EOL;
+                            unset($limit_exchange_sell_order);
                         }
+                    } elseif ((microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > 2)
                         unset($limit_exchange_sell_order);
-                    }
-                } elseif ((microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > 2)
-                    unset($limit_exchange_sell_order);
-            } elseif (Time::up($create_order_latency, 'create_order_exchange_sell')) {
-                if (count($open_orders) > 0) {
-                    foreach ($open_orders as $open_order) {
-                        if (Time::up(1, $open_order['id'], true)) {
-                            $ccxt_exchange->cancelOrder($open_order['id']);
-                            echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Cancel order before proofOrderbooks because open orders more than one: ' . $open_order['id'] . PHP_EOL;
-                        }
-                    }
-                } else {
-                    if (proofOrderbooks($orderbooks, $use_markets)) {
-                        $balances[$market_discovery] = $account_info[$market_discovery]['balances'];
-                        $balances[$exchange] = $account_info[$exchange]['balances'];
-
-                        if (!empty($balances[$exchange]) && !empty($balances[$market_discovery])) {
-                            $prices = getPrices($orderbooks, $market_discovery, $price_margin);
-
-                            reduceBalances($balances[$market_discovery]);
-                            reduceBalances($balances[$exchange]);
-                            if (!empty($mirror_trades_info[$symbol]['buy'])) {
-                                $balances[$market_discovery][$quote_asset]['free'] -= $mirror_trades_info[$symbol]['buy'] * $prices[$symbol]['sell'];
-                                $balances[$market_discovery][$quote_asset]['total'] -= $mirror_trades_info[$symbol]['buy'] * $prices[$symbol]['sell'];
+                } elseif (Time::up($create_order_latency, 'create_order_exchange_sell')) {
+                    if (count($open_orders) > 0) {
+                        foreach ($open_orders as $open_order) {
+                            if (Time::up(1, $open_order['id'], true)) {
+                                $ccxt_exchange->cancelOrder($open_order['id']);
+                                echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Cancel order before proofOrderbooks because open orders more than one: ' . $open_order['id'] . PHP_EOL;
                             }
+                        }
+                    } else {
+                        if (proofOrderbooks($orderbooks, $use_markets)) {
+                            $balances[$market_discovery] = $account_info[$market_discovery]['balances'];
+                            $balances[$exchange] = $account_info[$exchange]['balances'];
 
-                            $positions = getPositions($balances, $prices, $exchange, $market_discovery, $quote_asset, $use_markets, $limitation_in_quote_asset);
+                            if (!empty($balances[$exchange]) && !empty($balances[$market_discovery])) {
+                                $prices = getPrices($orderbooks, $market_discovery, $price_margin);
 
-                            $counting_sell = exchangeSellMarketDiscoveryBuy(
-                                $orderbooks[$market_discovery][$symbol],
-                                $positions[$symbol]['sell']['base_asset'],
-                                $profits,
-                                $fees[$exchange]['maker'],
-                                $fees[$market_discovery]['taker'],
-                                $amount_increment,
-                                $price_increment
-                            );
+                                reduceBalances($balances[$market_discovery]);
+                                reduceBalances($balances[$exchange]);
+                                if (!empty($mirror_trades_info[$symbol]['buy'])) {
+                                    $balances[$market_discovery][$quote_asset]['free'] -= $mirror_trades_info[$symbol]['buy'] * $prices[$symbol]['sell'];
+                                    $balances[$market_discovery][$quote_asset]['total'] -= $mirror_trades_info[$symbol]['buy'] * $prices[$symbol]['sell'];
+                                }
 
-                            if ($counting_sell && $orderbooks[$exchange][$symbol]['bids'][0][0] > $counting_sell['exchange']['price'])
+                                $positions = getPositions($balances, $prices, $exchange, $market_discovery, $quote_asset, $use_markets, $limitation_in_quote_asset);
+
                                 $counting_sell = exchangeSellMarketDiscoveryBuy(
                                     $orderbooks[$market_discovery][$symbol],
-                                    Math::incrementNumber($positions[$symbol]['sell']['base_asset'] * 0.99, $amount_increment),
+                                    $positions[$symbol]['sell']['base_asset'],
                                     $profits,
-                                    $fees[$exchange]['taker'],
+                                    $fees[$exchange]['maker'],
                                     $fees[$market_discovery]['taker'],
                                     $amount_increment,
                                     $price_increment
                                 );
 
-                            if ($counting_sell && $counting_sell['market_discovery']['confidence_interval']['price_max'] < $positions[$symbol]['sell']['price']) {
-                                if ($counting_sell['exchange']['amount'] * $counting_sell['exchange']['price'] > $min_deal_amount) {
-                                    if (
-                                        $create_order = $ccxt_exchange->createOrder(
-                                            $symbol,
-                                            'limit',
-                                            $counting_sell['exchange']['side'],
-                                            Math::incrementNumber($counting_sell['exchange']['amount'], $amount_increment),
-                                            max($counting_sell['exchange']['price'], Math::incrementNumber($orderbooks[$exchange][$symbol]['asks'][0][0] - 2 * $price_increment, $price_increment))
-                                        )
-                                    ) {
-                                        $limit_exchange_sell_order = ['counting' => $counting_sell, 'info' => ['id' => $create_order['id'], 'filled' => 0, 'timestamp' => microtime(true)]];
+                                if ($counting_sell && $orderbooks[$exchange][$symbol]['bids'][0][0] > $counting_sell['exchange']['price'])
+                                    $counting_sell = exchangeSellMarketDiscoveryBuy(
+                                        $orderbooks[$market_discovery][$symbol],
+                                        Math::incrementNumber($positions[$symbol]['sell']['base_asset'] * 0.99, $amount_increment),
+                                        $profits,
+                                        $fees[$exchange]['taker'],
+                                        $fees[$market_discovery]['taker'],
+                                        $amount_increment,
+                                        $price_increment
+                                    );
 
-                                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order created: ' . $create_order['id'] . ' limit ' . $counting_sell['exchange']['side'] . ' ' . Math::incrementNumber($counting_sell['exchange']['amount'], $amount_increment) . ' ' . $counting_sell['exchange']['price'] . PHP_EOL;
-                                        echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order range: ' . $counting_sell['exchange']['price'] . ', ' . $counting_sell['market_discovery']['confidence_interval']['price_max'] . ', ' . $counting_sell['market_discovery']['confidence_interval']['price_min'] . PHP_EOL;
-                                    } else
-                                        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Can not create order!!!' . PHP_EOL;
-                                }
-                            } else
-                                echo '[' . date('Y-m-d H:i:s') . '] [WARNING] May be not enough balance' . PHP_EOL;
-                        }
-                    } else
-                        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Orderbooks not proofed: ' . implode(', ', array_keys($orderbooks)) . PHP_EOL;
+                                if ($counting_sell && $counting_sell['market_discovery']['confidence_interval']['price_max'] < $positions[$symbol]['sell']['price']) {
+                                    if ($counting_sell['exchange']['amount'] * $counting_sell['exchange']['price'] > $min_deal_amount) {
+                                        if (
+                                            $create_order = $ccxt_exchange->createOrder(
+                                                $symbol,
+                                                'limit',
+                                                $counting_sell['exchange']['side'],
+                                                Math::incrementNumber($counting_sell['exchange']['amount'], $amount_increment),
+                                                max($counting_sell['exchange']['price'], Math::incrementNumber($orderbooks[$exchange][$symbol]['asks'][0][0] - 2 * $price_increment, $price_increment))
+                                            )
+                                        ) {
+                                            $limit_exchange_sell_order = ['counting' => $counting_sell, 'info' => ['id' => $create_order['id'], 'filled' => 0, 'timestamp' => microtime(true)]];
+
+                                            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order created: ' . $create_order['id'] . ' limit ' . $counting_sell['exchange']['side'] . ' ' . Math::incrementNumber($counting_sell['exchange']['amount'], $amount_increment) . ' ' . $counting_sell['exchange']['price'] . PHP_EOL;
+                                            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Order range: ' . $counting_sell['exchange']['price'] . ', ' . $counting_sell['market_discovery']['confidence_interval']['price_max'] . ', ' . $counting_sell['market_discovery']['confidence_interval']['price_min'] . PHP_EOL;
+                                        } else
+                                            echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Can not create order!!!' . PHP_EOL;
+                                    }
+                                } else
+                                    echo '[' . date('Y-m-d H:i:s') . '] [WARNING] May be not enough balance' . PHP_EOL;
+                            }
+                        } else
+                            echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Orderbooks not proofed: ' . implode(', ', array_keys($orderbooks)) . PHP_EOL;
+                    }
                 }
             }
+        } else {
+            sleep(1);
+            echo '[' . date('Y-m-d H:i:s') . '] [WARNING] IS NOT GOOD ARBITRAGE!!!' . PHP_EOL;
         }
     } else
         echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Memcached data is false!!!' . PHP_EOL;
@@ -480,7 +485,7 @@ function formatMemcachedData(array $data): array
 {
     foreach ($data as $key => $datum) {
         if ($key == 'is_good_arbitrage') {
-            $is_good_arbitrage = ((microtime(true) - $datum['timestamp']) < 300) ? $datum['data'] : false;
+            $is_good_arbitrage = $datum['data'] ?? false;
         } elseif (str_contains($key, 'accountInfo_')) {
             list(, $exchange) = explode('_', $key);
             

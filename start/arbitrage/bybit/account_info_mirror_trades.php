@@ -180,7 +180,7 @@ connect('wss://stream.bybit.com/spot/private/v3')->then(function ($conn) {
                 }
             }
 
-            if (Time::up(5, 'orderbook'))
+            if (Time::up(5, 'send_ping'))
                 $conn->send(json_encode([
                     'req_id' => 2,
                     'op' => 'ping'
@@ -192,7 +192,9 @@ connect('wss://stream.bybit.com/spot/private/v3')->then(function ($conn) {
         }
     });
 
-    $conn->on('close', function($code = null, $reason = null) {
+    $conn->on('close', function($code = null, $reason = null) use ($memcached) {
+        $memcached->set('is_good_arbitrage', false);
+        Log::warning(['file' => __FILE__, 'message' => 'Connection closed', '$code' => $code, '$reason' => $reason]);
         echo '[' . date('Y-m-d H:i:s') . '] Connection closed. Code: ' . $code . '; Reason: ' . $reason . PHP_EOL;
         throw new Exception('[' . date('Y-m-d H:i:s') . '] Connection closed. Code: ' . $code . '; Reason: ' . $reason);
     });

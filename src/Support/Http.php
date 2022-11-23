@@ -35,7 +35,7 @@ class Http
             );
         } catch (GuzzleException $e) {
             Log::error($e, ['$method' => $method, '$url' => $url, '$query' => $query, '$headers' => $headers]);
-            return false;
+            return null;
         }
 
         if ($json)

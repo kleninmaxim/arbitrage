@@ -10,7 +10,7 @@ $redis = \Src\Databases\Redis::init();
 $db = MySql::init(Config::file('db', 'mysql'));
 
 while (true) {
-    usleep(1000);
+    usleep(100000);
 
     if ($balances = $redis->get('balances')) {
         $db->replaceBalances($balances['exchange'], $balances['asset'], $balances['balance'])->execute();

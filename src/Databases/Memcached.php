@@ -60,6 +60,11 @@ class Memcached
             $this->prefix .= '_';
     }
 
+    public function flush(): bool
+    {
+        return $this->memcached->flush();
+    }
+
     private function setKeyFormat(string $key): string
     {
         return $this->prefix . $key;

@@ -161,6 +161,15 @@ while (true) {
                 }
             }
         } else {
+            if (isset($limit_exchange_sell_order)) {
+                if (Time::up(1, $limit_exchange_sell_order['info']['id'], true)) {
+                    if ($ccxt_exchange->cancelOrder($limit_exchange_sell_order['info']['id'])) {
+                        unset($limit_exchange_sell_order);
+                    } else {
+                        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Try cancel order: ' . $open_order['id'] . PHP_EOL;
+                    }
+                }
+            }
             sleep(1);
             echo '[' . date('Y-m-d H:i:s') . '] [WARNING] IS NOT GOOD ARBITRAGE!!!' . PHP_EOL;
         }
@@ -284,6 +293,15 @@ while (true) {
                 }
             }
         } else {
+            if (isset($limit_exchange_buy_order)) {
+                if (Time::up(1, $limit_exchange_buy_order['info']['id'], true)) {
+                    if ($ccxt_exchange->cancelOrder($limit_exchange_buy_order['info']['id'])) {
+                        unset($limit_exchange_buy_order);
+                    } else {
+                        echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Try cancel order: ' . $open_order['id'] . PHP_EOL;
+                    }
+                }
+            }
             sleep(1);
             echo '[' . date('Y-m-d H:i:s') . '] [WARNING] IS NOT GOOD ARBITRAGE!!!' . PHP_EOL;
         }

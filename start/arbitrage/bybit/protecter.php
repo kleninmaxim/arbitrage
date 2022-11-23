@@ -7,6 +7,8 @@ require_once dirname(__DIR__, 3) . '/index.php';
 
 $memcached = \Src\Databases\Memcached::init();
 
+echo '[' . date('Y-m-d H:i:s') . '] ' .  ($memcached->flush() ? 'Successful flush' : '[WARNING] NOT FLUSH') . PHP_EOL;
+
 $memcached->set('is_good_arbitrage', true);
 
 $name = 'ACCOUNT BYBIT';

@@ -91,13 +91,13 @@ if ($min && $max) {
     $msg = '';
     foreach ($end_balance_history as $asset => $amount) {
         if (!empty($start_balance_history[$asset])) {
-            $msg .= $asset . ': ' . rtrim(sprintf("%.8f", round($amount - $start_balance_history[$asset], 8)), '0') . ' ';
+            $msg .= rtrim(sprintf("%.8f", round($amount - $start_balance_history[$asset], 8)), '0') . ' ' . $asset . ', ';
         } else {
             echo '[' . date('Y-m-d H:i:s') . '] [WARNING] Empty: ' . $asset . PHP_EOL;
         }
     }
 
-    echo '[' . date('Y-m-d H:i:s') . '] Real profit: ' . $msg . PHP_EOL;
+    echo '[' . date('Y-m-d H:i:s') . '] Real profit: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
 } else {
     echo '[' . date('Y-m-d H:i:s') . '] Real profit: 0' . PHP_EOL;
 }

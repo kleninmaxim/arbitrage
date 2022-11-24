@@ -190,9 +190,9 @@ while (true) {
                                 $cancel_message = 'empty orderbook';
                             } elseif (empty($imitation_market_order)) {
                                 $cancel_message = 'no imitation price';
-                            } elseif (!isOrderInRange($limit_exchange_sell_order, $imitation_market_order)) {
+                            } elseif (!isOrderInRange($limit_exchange_buy_order, $imitation_market_order)) {
                                 $cancel_message = 'range out';
-                            } elseif ((microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > $order_lifetime) {
+                            } elseif ((microtime(true) - $limit_exchange_buy_order['info']['timestamp']) > $order_lifetime) {
                                 $cancel_message = 'expired time';
                             } else {
                                 $cancel_message = ' no reason';

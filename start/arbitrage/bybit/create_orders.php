@@ -67,7 +67,7 @@ while (true) {
                             !isOrderInRange($limit_exchange_sell_order, $imitation_market_order) ||
                             (microtime(true) - $limit_exchange_sell_order['info']['timestamp']) > $order_lifetime
                         ) {
-                            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Start cancel order: ' . $limit_exchange_sell_order['info']['id'] . ', Imitation price: ' . ($imitation_market_order['price'] ?? 'no imitation price') . PHP_EOL;
+                            echo '[' . date('Y-m-d H:i:s') . '] [' . microtime(true) . '] [INFO] Start cancel order: ' . $limit_exchange_sell_order['info']['id'] . ', Imitation price: ' . ($imitation_market_order['price'] ?? 'no imitation price') . PHP_EOL;
                             if (Time::up(1, $limit_exchange_sell_order['info']['id'], true)) {
                                 $ccxt_exchange->cancelOrder($limit_exchange_sell_order['info']['id']);
 
@@ -82,7 +82,7 @@ while (true) {
                                 } else {
                                     $cancel_message = ' no reason';
                                 }
-                                echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_sell_order['info']['id'] . ', Reason: ' . $cancel_message . PHP_EOL;
+                                echo '[' . date('Y-m-d H:i:s') . '] [' . microtime(true) . '] [INFO] Cancel order: ' . $limit_exchange_sell_order['info']['id'] . ', Reason: ' . $cancel_message . PHP_EOL;
                             }
                             unset($limit_exchange_sell_order);
                         }
@@ -199,7 +199,7 @@ while (true) {
                             !isOrderInRange($limit_exchange_buy_order, $imitation_market_order) ||
                             (microtime(true) - $limit_exchange_buy_order['info']['timestamp']) > $order_lifetime
                         ) {
-                            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Start cancel order: ' . $limit_exchange_buy_order['info']['id'] . ', Imitation price: ' . ($imitation_market_order['price'] ?? 'no imitation price') . PHP_EOL;
+                            echo '[' . date('Y-m-d H:i:s') . '] [' . microtime(true) . '] [INFO] Start cancel order: ' . $limit_exchange_buy_order['info']['id'] . ', Imitation price: ' . ($imitation_market_order['price'] ?? 'no imitation price') . PHP_EOL;
                             if (Time::up(1, $limit_exchange_buy_order['info']['id'], true)) {
                                 $ccxt_exchange->cancelOrder($limit_exchange_buy_order['info']['id']);
 
@@ -214,7 +214,7 @@ while (true) {
                                 } else {
                                     $cancel_message = ' no reason';
                                 }
-                                echo '[' . date('Y-m-d H:i:s') . '] [INFO] Cancel order: ' . $limit_exchange_buy_order['info']['id'] . ', Reason: ' . $cancel_message . PHP_EOL;
+                                echo '[' . date('Y-m-d H:i:s') . '] [' . microtime(true) . '] [INFO] Cancel order: ' . $limit_exchange_buy_order['info']['id'] . ', Reason: ' . $cancel_message . PHP_EOL;
                             }
                             unset($limit_exchange_buy_order);
                         }

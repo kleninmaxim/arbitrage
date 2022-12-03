@@ -175,9 +175,9 @@ while (true) {
         $balances_two = $exchange_two->getBalances($assets);
 }
 
-function imitationMarketOrderSell(array $orderbook, float $amount, float $price_increment): array
+function imitationMarketOrderSell(array $orderbook, float $must_amount, float $price_increment): array
 {
-    $am = $amount;
+    $am = $must_amount;
     $quote = 0;
     foreach ($orderbook['bids'] as $price_and_amount) {
         list($price, $amount) = $price_and_amount;
@@ -187,9 +187,9 @@ function imitationMarketOrderSell(array $orderbook, float $amount, float $price_
         } else {
             $quote += $am * $price;
             return [
-                'base' => $amount,
+                'base' => $must_amount,
                 'quote' => $quote,
-                'price' => Math::incrementNumber($quote / $amount, $price_increment, true)
+                'price' => Math::incrementNumber($quote / $must_amount, $price_increment, true)
             ];
         }
     }

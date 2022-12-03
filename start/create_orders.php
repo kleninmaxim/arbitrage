@@ -1,13 +1,11 @@
 <?php
 
-use Src\Crypto\Ccxt;
 use Src\Crypto\Exchanges\Binance;
 use Src\Crypto\Exchanges\Bybit;
 use Src\Support\Config;
 use Src\Support\Math;
-use Src\Support\Time;
 
-require_once dirname(__DIR__, 3) . '/index.php';
+require_once dirname(__DIR__) . '/index.php';
 
 $argv[1] = 'BTC/USDT';
 
@@ -45,7 +43,7 @@ foreach ($balances_one as $asset => $balance)
     $start_balance_history[$asset] = $balance + $balances_two[$asset];
 $msg = '';
 foreach ($start_balance_history as $asset => $amount)
-    $msg .= rtrim(sprintf("%.8f", $amount), '0') . ' ' . $asset . ', ';
+    $msg .= rtrim(sprintf("%.8f", $amount), '0') . ' create_orders.php' . $asset . ', ';
 echo '[' . date('Y-m-d H:i:s') . '] [INFO] Start balances: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
 
 reduceBalances($balances_one);
@@ -97,7 +95,7 @@ while (true) {
 
                     $msg = '';
                     foreach ($end_balance_history as $asset => $amount)
-                        $msg .= rtrim(sprintf("%.8f", round($amount - $start_balance_history[$asset], 8)), '0') . ' ' . $asset . ', ';
+                        $msg .= rtrim(sprintf("%.8f", round($amount - $start_balance_history[$asset], 8)), '0') . ' create_orders.php' . $asset . ', ';
 
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Create orders. Real profit: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balances: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
@@ -152,7 +150,7 @@ while (true) {
 
                     $msg = '';
                     foreach ($end_balance_history as $asset => $amount)
-                        $msg .= rtrim(sprintf("%.8f", round($amount - $start_balance_history[$asset], 8)), '0') . ' ' . $asset . ', ';
+                        $msg .= rtrim(sprintf("%.8f", round($amount - $start_balance_history[$asset], 8)), '0') . ' create_orders.php' . $asset . ', ';
 
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Create orders. Real profit: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balances: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;

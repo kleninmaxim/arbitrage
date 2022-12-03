@@ -97,18 +97,18 @@ while (true) {
                     foreach ($end_balance_history as $asset => $amount)
                         $msg .= rtrim(sprintf("%.8f", round($amount - $start_balance_history[$asset], 8)), '0') . ' ' . $asset . ', ';
 
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Create orders. Real profit: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balances: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] ONE SELL Create orders. Real profit: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] ONE SELL Balances: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
                     reduceBalances($balances_one);
                     reduceBalances($balances_two);
                 } else {
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Not enough min deal amount' . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] ONE SELL Not enough min deal amount' . PHP_EOL;
                 }
             } else {
-                echo '[' . date('Y-m-d H:i:s') . '] [INFO] Small profit: ' . $profit . PHP_EOL;
+                echo '[' . date('Y-m-d H:i:s') . '] [INFO] ONE SELL Small profit: ' . $profit . PHP_EOL;
             }
         } else {
-            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Zero balance for one amount' . PHP_EOL;
+            echo '[' . date('Y-m-d H:i:s') . '] [INFO] ONE SELL Zero balance for one amount' . PHP_EOL;
         }
 
         if ($balances_one[$quote_asset]['free'] > 0 && $balances_two[$base_asset]['free'] > 0) {
@@ -150,18 +150,18 @@ while (true) {
                     foreach ($end_balance_history as $asset => $amount)
                         $msg .= rtrim(sprintf("%.8f", round($amount - $start_balance_history[$asset], 8)), '0') . ' ' . $asset . ', ';
 
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Create orders. Real profit: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balances: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] TWO SELL Create orders. Real profit: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] TWO SELL Balances: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
                     reduceBalances($balances_one);
                     reduceBalances($balances_two);
                 } else {
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] Not enough min deal amount' . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] TWO SELL Not enough min deal amount' . PHP_EOL;
                 }
             } else {
-                echo '[' . date('Y-m-d H:i:s') . '] [INFO] Small profit' . PHP_EOL;
+                echo '[' . date('Y-m-d H:i:s') . '] [INFO] TWO SELL Small profit' . PHP_EOL;
             }
         } else {
-            echo '[' . date('Y-m-d H:i:s') . '] [INFO] Zero balance for one amount' . PHP_EOL;
+            echo '[' . date('Y-m-d H:i:s') . '] [INFO] TWO SELL Zero balance for one amount' . PHP_EOL;
         }
     } else {
         echo '[' . date('Y-m-d H:i:s') . '] [WARNING] empty orderbooks or orderbooks has latency: ' . $get_orderbook_latency . PHP_EOL;

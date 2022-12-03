@@ -40,10 +40,10 @@ $balances_two = $exchange_two->getBalances($assets);
 
 $start_balance_history = [];
 foreach ($balances_one as $asset => $balance)
-    $start_balance_history[$asset] = $balance + $balances_two[$asset];
+    $start_balance_history[$asset] = $balance['total'] + $balances_two[$asset]['total'];
 $msg = '';
 foreach ($start_balance_history as $asset => $amount)
-    $msg .= rtrim(sprintf("%.8f", $amount), '0') . ' create_orders.php' . $asset . ', ';
+    $msg .= rtrim(sprintf("%.8f", $amount), '0') . ' ' . $asset . ', ';
 echo '[' . date('Y-m-d H:i:s') . '] [INFO] Start balances: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
 
 reduceBalances($balances_one);
@@ -84,18 +84,18 @@ while (true) {
 
                     $start_balance_history = [];
                     foreach ($balances_one as $asset => $balance)
-                        $start_balance_history[$asset] = $balance + $balances_two[$asset];
+                        $start_balance_history[$asset] = $balance['total'] + $balances_two[$asset]['total'];
 
                     $balances_one = $exchange_one->getBalances($assets);
                     $balances_two = $exchange_two->getBalances($assets);
 
                     $end_balance_history = [];
                     foreach ($balances_one as $asset => $balance)
-                        $end_balance_history[$asset] = $balance + $balances_two[$asset];
+                        $end_balance_history[$asset] = $balance['total'] + $balances_two[$asset]['total'];
 
                     $msg = '';
                     foreach ($end_balance_history as $asset => $amount)
-                        $msg .= rtrim(sprintf("%.8f", round($amount - $start_balance_history[$asset], 8)), '0') . ' create_orders.php' . $asset . ', ';
+                        $msg .= rtrim(sprintf("%.8f", round($amount - $start_balance_history[$asset], 8)), '0') . ' ' . $asset . ', ';
 
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Create orders. Real profit: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balances: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
@@ -139,18 +139,18 @@ while (true) {
 
                     $start_balance_history = [];
                     foreach ($balances_one as $asset => $balance)
-                        $start_balance_history[$asset] = $balance + $balances_two[$asset];
+                        $start_balance_history[$asset] = $balance['total'] + $balances_two[$asset]['total'];
 
                     $balances_one = $exchange_one->getBalances($assets);
                     $balances_two = $exchange_two->getBalances($assets);
 
                     $end_balance_history = [];
                     foreach ($balances_one as $asset => $balance)
-                        $end_balance_history[$asset] = $balance + $balances_two[$asset];
+                        $end_balance_history[$asset] = $balance['total'] + $balances_two[$asset]['total'];
 
                     $msg = '';
                     foreach ($end_balance_history as $asset => $amount)
-                        $msg .= rtrim(sprintf("%.8f", round($amount - $start_balance_history[$asset], 8)), '0') . ' create_orders.php' . $asset . ', ';
+                        $msg .= rtrim(sprintf("%.8f", round($amount - $start_balance_history[$asset], 8)), '0') . ' ' . $asset . ', ';
 
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Create orders. Real profit: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] Balances: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;

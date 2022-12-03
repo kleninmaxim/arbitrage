@@ -8,7 +8,7 @@ use Src\Support\Log;
 class Binance
 {
     protected string $name = 'binance';
-    protected string $base_url = 'https://api.bybit.com';
+    protected string $base_url = 'https://api.binance.com';
     protected string $public_api;
     protected string $private_api;
 

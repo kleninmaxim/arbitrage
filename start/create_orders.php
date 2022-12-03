@@ -111,8 +111,6 @@ while (true) {
             echo '[' . date('Y-m-d H:i:s') . '] [INFO] Zero balance for one amount' . PHP_EOL;
         }
 
-        $imitation_base_asset_sell_two = imitationMarketOrderSell($orderbook_two, $balances_two[$base_asset]['free'] * 2, $price_increment);
-        $imitation_quote_asset_sell_one = imitationMarketOrderBuy($orderbook_one, $balances_one[$quote_asset]['free'] * 2, $price_increment);
         if ($balances_one[$quote_asset]['free'] > 0 && $balances_two[$base_asset]['free'] > 0) {
             $imitation_base_asset_sell_two = imitationMarketOrderSell($orderbook_one, $balances_one[$quote_asset]['free'] * 2, $price_increment);
             $imitation_quote_asset_sell_one = imitationMarketOrderBuy($orderbook_two, $balances_two[$base_asset]['free'] * 2, $price_increment);

@@ -120,10 +120,10 @@ while (true) {
             }
 
             if ($profit > $min_profit) {
-                $imitation_base_for_amount_sell_two = imitationMarketOrderBuy($orderbook_two, $balances_two[$base_asset]['free'], $price_increment);
-                $imitation_quote_asset_sell_for_amount_one = imitationMarketOrderSell($orderbook_one, $balances_one[$quote_asset]['free'], $price_increment);
-                if (min($imitation_base_for_amount_sell_two['quote'], $imitation_quote_asset_sell_for_amount_one['quote']) > $min_deal_amount) {
-                    $amount = Math::incrementNumber(min($imitation_base_for_amount_sell_two['base'], $imitation_quote_asset_sell_for_amount_one['base']), $amount_increment);
+                $imitation_base_asset_sell_for_amount_two = imitationMarketOrderSell($orderbook_two, $balances_two[$base_asset]['free'], $price_increment);
+                $imitation_quote_asset_sell_for_amount_one = imitationMarketOrderBuy($orderbook_one, $balances_one[$quote_asset]['free'], $price_increment);
+                if (min($imitation_base_asset_sell_for_amount_two['quote'], $imitation_quote_asset_sell_for_amount_one['quote']) > $min_deal_amount) {
+                    $amount = Math::incrementNumber(min($imitation_base_asset_sell_for_amount_two['base'], $imitation_quote_asset_sell_for_amount_one['base']), $amount_increment);
                     $exchange_one->createOrder($symbol, 'MARKET', 'BUY', $amount);
                     $exchange_two->createOrder($symbol, 'MARKET', 'Sell', $amount);
 
@@ -142,7 +142,7 @@ while (true) {
                     foreach ($end_balance_history as $asset => $amount)
                         $msg .= rtrim(sprintf("%.8f", round($amount - $start_balance_history[$asset], 8)), '0') . ' ' . $asset . ', ';
 
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] [CREATE ORDERS]. TWO SELL. Amount:' . $amount . '. Buy: ' . $imitation_base_for_amount_sell_two['price'] . '. Sell: ' . $imitation_quote_asset_sell_for_amount_one['price'] . ' Real profit: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] [CREATE ORDERS]. TWO SELL. Amount:' . $amount . '. Buy: ' . $imitation_base_asset_sell_for_amount_two['price'] . '. Sell: ' . $imitation_quote_asset_sell_for_amount_one['price'] . ' Real profit: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] TWO SELL Balances: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
                     reduceBalances($balances_one);
                     reduceBalances($balances_two);
@@ -150,7 +150,7 @@ while (true) {
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] TWO SELL Not enough min deal amount. Profit: ' . $profit . PHP_EOL;
                 }
             } else {
-                echo '[' . date('Y-m-d H:i:s') . '] [INFO] ONE SELL Small profit: ' . $profit . PHP_EOL;
+                echo '[' . date('Y-m-d H:i:s') . '] [INFO] TWO SELL Small profit: ' . $profit . PHP_EOL;
             }
         } else {
             echo '[' . date('Y-m-d H:i:s') . '] [INFO] TWO SELL Zero balance for one amount' . PHP_EOL;

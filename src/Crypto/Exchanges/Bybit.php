@@ -23,9 +23,20 @@ class Bybit
         return new static(...$parameters);
     }
 
+    public function getOrderbook(
+        string $symbol,  // BTCUSDT
+        int $depth = 100 // under 200
+    ): ?array
+    {
+        $response = $this->sendPublicRequest('get', '/spot/v3/public/quote/depth', ['symbol' => $symbol, 'limit' => $depth]);
+        if (!empty($response['result']['time']))
+            return $response['result'];
+        return null;
+    }
+
     public function getBalances(array $assets = []): ?array
     {
-        $response = $this->sendRequest('get', '/spot/v3/private/account');
+        $response = $this->sendPrivateRequest('get', '/spot/v3/private/account');
 
         if (!empty($response['result']['balances'])) {
             foreach ($response['result']['balances'] as $balance)
@@ -46,16 +57,16 @@ class Bybit
     }
 
     public function createOrder(
-        string $symbol, // BTCUSDT
+        string $symbol, // BTC/USDT
         string $type,   // MARKET
         string $side,   // Buy, Sell
         float $amount
     ): ?array
     {
-        $order = $this->sendRequest(
+        $order = $this->sendPrivateRequest(
             'post',
             '/spot/v3/private/order',
-            ['symbol' => $symbol, 'orderType' => $type, 'side' => $side, 'orderQty' => $amount]
+            ['symbol' => str_replace('/', '', $symbol), 'orderType' => $type, 'side' => $side, 'orderQty' => $amount]
         );
         if (!empty($order['result']['orderId'])) {
             $result = $order['result'];
@@ -84,20 +95,21 @@ class Bybit
         return Http::$method($url, $query, $header) ?: [];
     }
 
-    private function sendRequest(string $method, string $url, array $get_params = []): array
+    private function sendPublicRequest(string $method, string $url, array $get_params = []): array
+    {
+        ksort($get_params);
+        return $this->request($method, $this->base_url . $url, $get_params);
+    }
+
+    private function sendPrivateRequest(string $method, string $url, array $get_params = []): array
     {
         $get_params['api_key'] = $this->public_api;
         $get_params['timestamp'] = $this->getTimestamp();
-
         ksort($get_params);
-
         return $this->request(
             $method,
             $this->base_url . $url,
-            array_merge(
-                $get_params,
-                ['sign' => $this->generateSignature($get_params)]
-            )
+            array_merge($get_params, ['sign' => $this->generateSignature($get_params)])
         );
     }
 

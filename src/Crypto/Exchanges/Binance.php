@@ -23,12 +23,23 @@ class Binance
         return new static(...$parameters);
     }
 
-    public function getBalance(array $assets = []): ?array
+    public function getOrderbook(
+        string $symbol,  // BTCUSDT
+        int $depth = 100 // under 5000
+    ): ?array
     {
-        $response = $this->sendRequest('get', '/api/v3/account');
+        $response = $this->sendPublicRequest('get', '/api/v3/depth', ['symbol' => $symbol, 'limit' => $depth]);
+        if (!empty($response['lastUpdateId']))
+            return $response;
+        return null;
+    }
 
-        if (!empty($response['result']['balances'])) {
-            foreach ($response['result']['balances'] as $balance)
+    public function getBalances(array $assets = []): ?array
+    {
+        $response = $this->sendPrivateRequest('get', '/api/v3/account');
+
+        if (!empty($response['balances'])) {
+            foreach ($response['balances'] as $balance)
                 $balances[$balance['asset']] = ['free' => $balance['free'], 'used' => $balance['locked'], 'total' => round($balance['free'] + $balance['locked'], 8)];
 
             if ($assets) {
@@ -46,17 +57,16 @@ class Binance
     }
 
     public function createOrder(
-        string $symbol, // BTCUSDT
+        string $symbol, // BTC/USDT
         string $type,   // MARKET
         string $side,   // BUY SELL
         float $amount
     ): ?array
     {
-        $get_params = ['symbol' => $symbol, 'type' => $type, 'side' => $side, 'quantity' => $amount];
-        return $this->sendRequest(
+        return $this->sendPrivateRequest(
             'post',
             '/api/v3/order',
-            $get_params
+            ['symbol' => str_replace('/', '', $symbol), 'type' => $type, 'side' => $side, 'quantity' => $amount]
         );
     }
 
@@ -65,12 +75,16 @@ class Binance
         return Http::$method($url, $query, $header) ?: [];
     }
 
-    private function sendRequest(string $method, string $url, array $get_params = []): array
+    private function sendPublicRequest(string $method, string $url, array $get_params = []): array
+    {
+        ksort($get_params);
+        return $this->request($method, $this->base_url . $url, $get_params);
+    }
+
+    private function sendPrivateRequest(string $method, string $url, array $get_params = []): array
     {
         $get_params['timestamp'] = $this->getTimestamp();
-
         ksort($get_params);
-
         return $this->request(
             $method,
             $this->base_url . $url,

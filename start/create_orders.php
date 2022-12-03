@@ -150,7 +150,7 @@ while (true) {
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] TWO SELL Not enough min deal amount' . PHP_EOL;
                 }
             } else {
-                echo '[' . date('Y-m-d H:i:s') . '] [INFO] TWO SELL Small profit' . PHP_EOL;
+                echo '[' . date('Y-m-d H:i:s') . '] [INFO] ONE SELL Small profit: ' . $profit . PHP_EOL;
             }
         } else {
             echo '[' . date('Y-m-d H:i:s') . '] [INFO] TWO SELL Zero balance for one amount' . PHP_EOL;

@@ -93,7 +93,7 @@ while (true) {
                     foreach ($end_balance_history as $asset => $amount)
                         $msg .= rtrim(sprintf("%.8f", round($amount - $start_balance_history[$asset], 8)), '0') . ' ' . $asset . ', ';
 
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] TWO SELL Create orders. Amount:' . $amount . '. Buy: ' . $imitation_base_asset_sell_for_amount_one['price'] . '. Sell: ' . $imitation_quote_asset_for_amount_sell_two['price'] . ' Real profit: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] [CREATE ORDERS]. ONE SELL. Amount:' . $amount . '. Buy: ' . $imitation_base_asset_sell_for_amount_one['price'] . '. Sell: ' . $imitation_quote_asset_for_amount_sell_two['price'] . ' Real profit: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] ONE SELL Balances: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
                     reduceBalances($balances_one);
                     reduceBalances($balances_two);
@@ -142,7 +142,7 @@ while (true) {
                     foreach ($end_balance_history as $asset => $amount)
                         $msg .= rtrim(sprintf("%.8f", round($amount - $start_balance_history[$asset], 8)), '0') . ' ' . $asset . ', ';
 
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] TWO SELL Create orders. Amount:' . $amount . '. Buy: ' . $imitation_base_for_amount_sell_two['price'] . '. Sell: ' . $imitation_quote_asset_sell_for_amount_one['price'] . ' Real profit: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] [CREATE ORDERS]. TWO SELL. Amount:' . $amount . '. Buy: ' . $imitation_base_for_amount_sell_two['price'] . '. Sell: ' . $imitation_quote_asset_sell_for_amount_one['price'] . ' Real profit: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] TWO SELL Balances: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
                     reduceBalances($balances_one);
                     reduceBalances($balances_two);

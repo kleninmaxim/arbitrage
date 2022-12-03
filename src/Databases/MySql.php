@@ -4,10 +4,6 @@ namespace Src\Databases;
 
 use PDO;
 use PDOStatement;
-use Src\Databases\MySqlTables\BalancesTable;
-use Src\Databases\MySqlTables\MirrorTrades;
-use Src\Databases\MySqlTables\OrdersTable;
-use Src\Databases\MySqlTables\Trades;
 
 /**
  * @method static mixed get(array $execute_array = null)
@@ -17,8 +13,6 @@ use Src\Databases\MySqlTables\Trades;
  */
 class MySql
 {
-    use BalancesTable, OrdersTable, Trades, MirrorTrades;
-
     public PDO $connection;
     private string $query = '';
     private ?array $execute_array = [];

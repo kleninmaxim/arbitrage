@@ -15,7 +15,6 @@ class Redis
     public function __construct(\Redis $redis, string $service = '127.0.0.1', int $port = 6379)
     {
         $this->redis = $redis;
-
         $this->redis->connect($service, $port);
     }
 
@@ -34,7 +33,6 @@ class Redis
         } catch (RedisException $e) {
             Log::error($e, ['$queueName' => $queueName, '$data' => $data]);
         }
-
         return null;
     }
 
@@ -45,7 +43,6 @@ class Redis
         } catch (RedisException $e) {
             Log::error($e, ['$queueName' => $queueName]);
         }
-
         return is_string($data) ? unserialize($data) : $data;
     }
 
@@ -56,7 +53,6 @@ class Redis
         } catch (RedisException $e) {
             Log::error($e, ['$queueName' => $queueName]);
         }
-
         return null;
     }
 
@@ -67,7 +63,6 @@ class Redis
         } catch (RedisException $e) {
             Log::error($e, ['$queueName' => $queueName]);
         }
-
         return null;
     }
 }

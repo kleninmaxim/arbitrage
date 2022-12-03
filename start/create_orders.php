@@ -27,7 +27,7 @@ $info_of_markets = $config['info_of_markets'];
 
 $price_increment = $info_of_markets[$symbol]['price_increment'];
 $amount_increment = $info_of_markets[$symbol]['amount_increment'];
-list($base_asset, $quote_asset) = $symbol;
+list($base_asset, $quote_asset) = explode('/', $symbol);
 
 $api_keys['binance'] = Config::file('keys', 'binance');
 $api_keys['bybit'] = Config::file('keys', 'bybit');
@@ -168,6 +168,11 @@ while (true) {
     } else {
         echo '[' . date('Y-m-d H:i:s') . '] [WARNING] empty orderbooks or orderbooks has latency: ' . $get_orderbook_latency . PHP_EOL;
     }
+
+    if (empty($balances_one))
+        $balances_one = $exchange_one->getBalances($assets);
+    if (empty($balances_two))
+        $balances_two = $exchange_two->getBalances($assets);
 }
 
 function imitationMarketOrderSell(array $orderbook, float $amount, float $price_increment): array

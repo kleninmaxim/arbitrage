@@ -64,10 +64,10 @@ while (true) {
 
             if ($imitation_base_asset_sell_one['base'] < $imitation_quote_asset_sell_two['base']) {
                 $imitation_quote_asset_sell_two = imitationMarketOrderBuy($orderbook_two, $imitation_base_asset_sell_one['quote'], $price_increment);
-                $profit = ($imitation_quote_asset_sell_two['base'] - $imitation_base_asset_sell_one['base']) / ($imitation_quote_asset_sell_two['base'] + $imitation_base_asset_sell_one['base']) * 100;
+                $profit = round(($imitation_quote_asset_sell_two['base'] - $imitation_base_asset_sell_one['base']) / ($imitation_quote_asset_sell_two['base'] + $imitation_base_asset_sell_one['base']) * 100, 8);
             } else {
                 $imitation_base_asset_sell_one = imitationMarketOrderSell($orderbook_one, $imitation_quote_asset_sell_two['base'], $price_increment);
-                $profit = ($imitation_base_asset_sell_one['quote'] - $imitation_quote_asset_sell_two['quote']) / ($imitation_base_asset_sell_one['quote'] + $imitation_quote_asset_sell_two['quote']) * 100;
+                $profit = round(($imitation_base_asset_sell_one['quote'] - $imitation_quote_asset_sell_two['quote']) / ($imitation_base_asset_sell_one['quote'] + $imitation_quote_asset_sell_two['quote']) * 100, 8);
             }
 
             if ($profit > $min_profit) {
@@ -98,7 +98,7 @@ while (true) {
                     reduceBalances($balances_one);
                     reduceBalances($balances_two);
                 } else {
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] ONE SELL Not enough min deal amount' . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] ONE SELL Not enough min deal amount. Profit: ' . $profit . PHP_EOL;
                 }
             } else {
                 echo '[' . date('Y-m-d H:i:s') . '] [INFO] ONE SELL Small profit: ' . $profit . PHP_EOL;
@@ -113,10 +113,10 @@ while (true) {
 
             if ($imitation_base_asset_sell_two['base'] < $imitation_quote_asset_sell_one['base']) {
                 $imitation_quote_asset_sell_one = imitationMarketOrderBuy($orderbook_one, $imitation_base_asset_sell_two['quote'], $price_increment);
-                $profit = ($imitation_quote_asset_sell_one['base'] - $imitation_base_asset_sell_two['base']) / ($imitation_quote_asset_sell_one['base'] + $imitation_base_asset_sell_two['base']) * 100;
+                $profit = round(($imitation_quote_asset_sell_one['base'] - $imitation_base_asset_sell_two['base']) / ($imitation_quote_asset_sell_one['base'] + $imitation_base_asset_sell_two['base']) * 100, 8);
             } else {
                 $imitation_base_asset_sell_two = imitationMarketOrderSell($orderbook_two, $imitation_quote_asset_sell_one['base'], $price_increment);
-                $profit = ($imitation_base_asset_sell_two['quote'] - $imitation_quote_asset_sell_one['quote']) / ($imitation_base_asset_sell_two['quote'] + $imitation_quote_asset_sell_one['quote']) * 100;
+                $profit = round(($imitation_base_asset_sell_two['quote'] - $imitation_quote_asset_sell_one['quote']) / ($imitation_base_asset_sell_two['quote'] + $imitation_quote_asset_sell_one['quote']) * 100, 8);
             }
 
             if ($profit > $min_profit) {
@@ -147,7 +147,7 @@ while (true) {
                     reduceBalances($balances_one);
                     reduceBalances($balances_two);
                 } else {
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] TWO SELL Not enough min deal amount' . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] TWO SELL Not enough min deal amount. Profit: ' . $profit . PHP_EOL;
                 }
             } else {
                 echo '[' . date('Y-m-d H:i:s') . '] [INFO] ONE SELL Small profit: ' . $profit . PHP_EOL;

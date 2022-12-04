@@ -78,10 +78,6 @@ while (true) {
                     $exchange_one->createOrder($symbol, 'MARKET', 'SELL', $amount);
                     $exchange_two->createOrder($symbol, 'LIMIT', 'Buy', $amount, Math::incrementNumber($imitation_quote_asset_for_amount_sell_two['price'] * 1.02, $price_increment));
 
-                    $start_balance_history = [];
-                    foreach ($balances_one as $asset => $balance)
-                        $start_balance_history[$asset] = $balance['total'] + $balances_two[$asset]['total'];
-
                     $balances_one = $exchange_one->getBalances($assets);
                     $balances_two = $exchange_two->getBalances($assets);
 
@@ -126,10 +122,6 @@ while (true) {
                     $amount = Math::incrementNumber(min($imitation_base_asset_sell_for_amount_two['base'], $imitation_quote_asset_sell_for_amount_one['base']), $amount_increment);
                     $exchange_one->createOrder($symbol, 'MARKET', 'BUY', $amount);
                     $exchange_two->createOrder($symbol, 'LIMIT', 'Sell', $amount, Math::incrementNumber($imitation_base_asset_sell_for_amount_two['price'] * 0.98, $price_increment));
-
-                    $start_balance_history = [];
-                    foreach ($balances_one as $asset => $balance)
-                        $start_balance_history[$asset] = $balance['total'] + $balances_two[$asset]['total'];
 
                     $balances_one = $exchange_one->getBalances($assets);
                     $balances_two = $exchange_two->getBalances($assets);

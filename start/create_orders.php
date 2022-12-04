@@ -85,16 +85,16 @@ while (true) {
                     $balances_one = $exchange_one->getBalances($assets);
                     $balances_two = $exchange_two->getBalances($assets);
 
-                    $end_balance_history = [];
+                    $start_balance_history = [];
                     foreach ($balances_one as $asset => $balance)
-                        $end_balance_history[$asset] = $balance['total'] + $balances_two[$asset]['total'];
-
+                        $start_balance_history[$asset] = $balance['total'] + $balances_two[$asset]['total'];
                     $msg = '';
-                    foreach ($end_balance_history as $asset => $amount)
-                        $msg .= rtrim(sprintf("%.8f", round($amount - $start_balance_history[$asset], 8)), '0') . ' ' . $asset . ', ';
+                    foreach ($start_balance_history as $asset => $amount)
+                        $msg .= rtrim(sprintf("%.8f", $amount), '0') . ' ' . $asset . ', ';
 
-                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] [CREATE ORDERS]. ONE SELL. Amount: ' . $amount . '. Buy: ' . $imitation_base_asset_sell_for_amount_one['price'] . '. Sell: ' . $imitation_quote_asset_for_amount_sell_two['price'] . ' Real profit: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
+                    echo '[' . date('Y-m-d H:i:s') . '] [INFO] [CREATE ORDERS]. ONE SELL. Amount: ' . $amount . '. Buy: ' . $imitation_base_asset_sell_for_amount_one['price'] . '. Sell: ' . $imitation_quote_asset_for_amount_sell_two['price'] . PHP_EOL;
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] ONE SELL Balances: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
+
                     reduceBalances($balances_one);
                     reduceBalances($balances_two);
                 } else {
@@ -134,13 +134,12 @@ while (true) {
                     $balances_one = $exchange_one->getBalances($assets);
                     $balances_two = $exchange_two->getBalances($assets);
 
-                    $end_balance_history = [];
+                    $start_balance_history = [];
                     foreach ($balances_one as $asset => $balance)
-                        $end_balance_history[$asset] = $balance['total'] + $balances_two[$asset]['total'];
-
+                        $start_balance_history[$asset] = $balance['total'] + $balances_two[$asset]['total'];
                     $msg = '';
-                    foreach ($end_balance_history as $asset => $amount)
-                        $msg .= rtrim(sprintf("%.8f", round($amount - $start_balance_history[$asset], 8)), '0') . ' ' . $asset . ', ';
+                    foreach ($start_balance_history as $asset => $amount)
+                        $msg .= rtrim(sprintf("%.8f", $amount), '0') . ' ' . $asset . ', ';
 
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] [CREATE ORDERS]. TWO SELL. Amount: ' . $amount . '. Buy: ' . $imitation_base_asset_sell_for_amount_two['price'] . '. Sell: ' . $imitation_quote_asset_sell_for_amount_one['price'] . ' Real profit: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;
                     echo '[' . date('Y-m-d H:i:s') . '] [INFO] TWO SELL Balances: ' . preg_replace('/,([^,]*)$/', '.\1', rtrim($msg)) . PHP_EOL;

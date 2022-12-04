@@ -81,7 +81,7 @@ class Bybit
                 'datetime' => date('Y-m-d H:i:s', floor($result['createTime'] / 1000))
             ];
         }
-        Log::warning(['file' => __FILE__, '$order' => $order]);
+        Log::warning(['file' => __FILE__, '$order' => $order, '$symbol' => $symbol, '$type' => $type, '$side' => $side, '$amount' => $amount]);
         return null;
     }
 

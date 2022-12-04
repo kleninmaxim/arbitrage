@@ -58,15 +58,16 @@ class Bybit
 
     public function createOrder(
         string $symbol, // BTC/USDT
-        string $type,   // MARKET
+        string $type,   // LIMIT MARKET
         string $side,   // Buy, Sell
-        float $amount
+        float $amount,
+        float $price
     ): ?array
     {
         $order = $this->sendPrivateRequest(
             'post',
             '/spot/v3/private/order',
-            ['symbol' => str_replace('/', '', $symbol), 'orderType' => $type, 'side' => $side, 'orderQty' => $amount]
+            ['symbol' => str_replace('/', '', $symbol), 'orderType' => $type, 'side' => $side, 'orderQty' => $amount, 'orderPrice' => $price]
         );
         if (!empty($order['result']['orderId'])) {
             $result = $order['result'];
@@ -81,7 +82,7 @@ class Bybit
                 'datetime' => date('Y-m-d H:i:s', floor($result['createTime'] / 1000))
             ];
         }
-        Log::warning(['file' => __FILE__, '$order' => $order, '$symbol' => $symbol, '$type' => $type, '$side' => $side, '$amount' => $amount]);
+        Log::warning(['file' => __FILE__, '$order' => $order, '$symbol' => $symbol, '$type' => $type, '$side' => $side, '$amount' => $amount, '$price' => $price]);
         return null;
     }
 
